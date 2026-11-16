@@ -1,88 +1,132 @@
-import { createClient } from '@/lib/supabase/server'
-import { redirect } from 'next/navigation'
-import { Button } from '@/components/ui/button'
-import Link from 'next/link'
+import React from 'react';
+import { Metadata } from 'next';
+import HomePageClient from '@/components/kids-coach/HomePageClient';
+import JsonLd from '@/components/kids-coach/JsonLd';
 
-export default async function Home() {
-  const supabase = await createClient()
+const SITE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://kidscoach-navi.wellne.co.jp';
 
-  const { data: sessionData } = await supabase.auth.getSession()
-  const session = sessionData?.session
-  let user = null
+export const metadata: Metadata = {
+  title: 'キッズコーチナビ by Wellne ｜ 子どもの本当の「できた！」に出会う',
+  description:
+    '子どもには、運動の楽しさに出会って、自信に満ちた笑顔になって欲しい。入会金0円の都度払いで受けられる出張個別スポーツ指導マッチングサービス（世田谷区・目黒区・港区・渋谷区・品川区対応）。',
+  keywords: [
+    'キッズコーチナビ',
+    '子ども スポーツ 個人レッスン',
+    'かけっこ 教室 出張',
+    '水泳 マンツーマン 子ども',
+    '逆上がり 個人指導',
+    '世田谷区 目黒区 港区 渋谷区 品川区',
+  ],
+  alternates: {
+    canonical: `${SITE_URL}/`,
+  },
+  openGraph: {
+    type: 'website',
+    locale: 'ja_JP',
+    url: `${SITE_URL}/`,
+    siteName: 'キッズコーチナビ by Wellne',
+    title: 'キッズコーチナビ by Wellne ｜ 子どもの本当の「できた！」に出会う',
+    description:
+      'かけっこ・学校体育（逆上がり/跳び箱/縄跳び）・水泳の出張マンツーマン指導。入会金0円・1回都度払いで、本人確認済みコーチが近隣の公園や利用可能施設へ出張します。',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'キッズコーチナビ by Wellne ｜ 子どもの本当の「できた！」に出会う',
+    description:
+      '入会金0円・都度払いの子ども向け出張スポーツ個人レッスン。かけっこ・学校体育・水泳に対応。',
+  },
+};
 
-  if (session) {
-    const { data: userData } = await supabase.auth.getUser()
-    user = userData?.user
-  }
+export default function HomePage() {
+  // AIO・Google検索向けの構造化データ（Organization / Service / FAQPage）
+  const homeJsonLd = [
+    {
+      '@context': 'https://schema.org',
+      '@type': 'Organization',
+      name: 'キッズコーチナビ by Wellne',
+      url: SITE_URL,
+      parentOrganization: {
+        '@type': 'Organization',
+        name: '株式会社Wellne',
+      },
+      areaServed: ['東京都世田谷区', '東京都目黒区', '東京都港区', '東京都渋谷区', '東京都品川区'],
+    },
+    {
+      '@context': 'https://schema.org',
+      '@type': 'Service',
+      name: 'キッズコーチナビ 出張個別スポーツ指導',
+      serviceType: '子ども向け出張マンツーマン運動指導（かけっこ・学校体育克服・水泳）',
+      provider: {
+        '@type': 'Organization',
+        name: '株式会社Wellne',
+      },
+      areaServed: [
+        { '@type': 'City', name: '世田谷区' },
+        { '@type': 'City', name: '目黒区' },
+        { '@type': 'City', name: '港区' },
+        { '@type': 'City', name: '渋谷区' },
+        { '@type': 'City', name: '品川区' },
+      ],
+      offers: {
+        '@type': 'AggregateOffer',
+        priceCurrency: 'JPY',
+        lowPrice: 5500,
+        highPrice: 8000,
+        offerCount: 3,
+      },
+    },
+    {
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: [
+        {
+          '@type': 'Question',
+          name: 'レッスン場所はどのように決まりますか？',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'かけっこや鉄棒などはご自宅近くの公園や広場で実施可能です。水泳などの施設競技は、個人指導が許可されているプールやスポーツ施設をご利用いただきます。対応エリア内であればコーチから実施可能な最適スポットをご提案します。',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: '運動が極端に苦手・水が怖くても大丈夫ですか？',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: '大歓迎です。無理強いは一切せず、お子様の性格やペースに合わせて遊びの延長からスモールステップで進めますのでご安心ください。',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: '予約の流れとお支払いのタイミングを教えてください。',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'コーチの空き枠を確認したあと、専用チャットで希望日時や実施場所をご相談いただきます。日程と場所が決定した後にクレジットカードで事前決済を行う流れのため、当日の現金手渡しは不要です。',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: '急な発熱や雨天時の変更・キャンセルはできますか？',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: '通常のご変更・キャンセルは前日正午（12:00）まで無料で対応しています。屋外レッスンにおける雨天時は、当日の開始2時間前まで手数料なしで別日へ振り替え可能です。',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: '表示されているレッスン料金以外にかかる費用はありますか？',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'コーチごとに設定されたレッスン料金（税込・出張交通費込）以外の追加費用はかかりません。入会金や月会費も不要です。有料プール等を利用する場合の施設入場料のみ実費をご負担いただきます。',
+          },
+        },
+      ],
+    },
+  ];
 
-  // 1. 未ログインユーザーはログイン案内画面を表示
-  if (!user) {
-    return (
-      <div className="flex min-h-screen flex-col items-center justify-center p-4 bg-slate-50">
-        <div className="max-w-md w-full bg-white p-8 rounded-2xl border border-slate-200 shadow-sm text-center space-y-6">
-          <div className="space-y-2">
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900">Swim Partners Manager</h1>
-            <p className="text-sm text-slate-500">コーチング・会員業務管理システム</p>
-          </div>
-          <p className="text-xs text-slate-600 leading-relaxed">
-            関係者（管理者・コーチ・会員）専用のポータルです。<br />ログインしてご利用ください。
-          </p>
-          <div className="pt-2">
-            <Button asChild className="w-full bg-sky-600 hover:bg-sky-700 text-white font-bold h-11 rounded-xl">
-              <Link href="/login">ログイン画面へ進む</Link>
-            </Button>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  // 2. ログイン済みユーザーのリダイレクト判定（既存保護）
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single()
-
-  if (profile?.role === 'admin' || profile?.role === 'owner') {
-    redirect('/admin')
-  } else if (profile?.role === 'coach') {
-    redirect('/coach')
-  }
-
-  // 生徒（会員）の判定
-  const student = await getStudentProfile(supabase, user.id)
-  if (student) {
-    redirect('/member/dashboard')
-  }
-
-  // 役割未設定時のフォールバック
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center p-4 bg-slate-50">
-      <h1 className="mb-4 text-2xl font-bold text-slate-800">アカウント設定が必要です</h1>
-      <p className="mb-8 text-slate-600">あなたのユーザーには役割（Role）が割り当てられていません。管理者に連絡してください。</p>
-      <Button onClick={async () => {
-        'use server'
-        try {
-          const supabase = await createClient()
-          await supabase.auth.signOut()
-        } catch (e) {
-          console.error('SignOut error:', e)
-        }
-        redirect('/')
-      }}>
-        ログアウト
-      </Button>
-    </div>
-  )
-}
-
-// 生徒プロフィール確認ヘルパー（既存保護）
-async function getStudentProfile(supabase: any, userId: string) {
-  const { data } = await supabase
-    .from('students')
-    .select('id')
-    .eq('auth_user_id', userId)
-    .single()
-  return data
+    <>
+      <JsonLd data={homeJsonLd} />
+      <HomePageClient />
+    </>
+  );
 }

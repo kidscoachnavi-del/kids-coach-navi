@@ -1,12 +1,26 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@import url('https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=JetBrains+Mono:wght@400;500;600&family=M+PLUS+1:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Rubik:wght@600;700;800&family=Shippori+Mincho:wght@500;600;700;800&display=swap');
 
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: "Inter", "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
+  --font-sans: "BIZ UDPGothic", "Noto Sans JP", -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-serif: "Shippori Mincho", serif;
+  --font-en: "Plus Jakarta Sans", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+
+  /* Meepa / 自然な活版デザインパレット */
+  --color-meepa-bg: #FDFBF7;
+  --color-meepa-text: #2C2B29;
+  --color-meepa-sub: #5E5B54;
+  --color-meepa-coral: #E3644F;
+  --color-meepa-yellow: #F7D668;
+  --color-meepa-teal: #3E8E84;
+  --color-meepa-sky: #88C8D8;
+  --color-meepa-card: #FCE7A2;
   
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
@@ -183,5 +197,96 @@
 
   .page-container {
     @apply w-full max-w-4xl mx-auto px-6 sm:px-10 py-10;
+  }
+
+  /* プレミアム・エディトリアル＆グラスモフィズム深み表現 */
+  .font-editorial {
+    font-family: "Cormorant Garamond", "Shippori Mincho", serif;
+  }
+
+  .font-jp-serif {
+    font-family: "Shippori Mincho", "Cormorant Garamond", serif;
+  }
+
+  /* 微細なインナーシャドウ＋自然光ドロップシャドウによる立体カード */
+  .depth-card {
+    background: rgba(255, 255, 255, 0.86);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(226, 232, 240, 0.85);
+    box-shadow:
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.95),
+      inset 0 0 24px 0 rgba(248, 250, 252, 0.6),
+      0 1px 2px 0 rgba(15, 23, 42, 0.04),
+      0 12px 32px -12px rgba(15, 23, 42, 0.06);
+  }
+
+  .depth-card-dark {
+    background: rgba(15, 23, 42, 0.82);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow:
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.18),
+      inset 0 -1px 0 0 rgba(15, 23, 42, 0.6),
+      0 20px 40px -15px rgba(2, 6, 23, 0.35);
+  }
+
+  .depth-Well {
+    background: rgba(248, 250, 252, 0.88);
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    box-shadow:
+      inset 0 2px 5px 0 rgba(15, 23, 42, 0.035),
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.7);
+  }
+
+  /* 網膜（メッシュ）グラデーション背景 */
+  .retina-mesh-bg {
+    background-color: #F8FAFC;
+    background-image:
+      radial-gradient(at 12% 8%, rgba(2, 132, 199, 0.07) 0px, transparent 48%),
+      radial-gradient(at 88% 15%, rgba(15, 23, 42, 0.045) 0px, transparent 52%),
+      radial-gradient(at 52% 58%, rgba(56, 189, 248, 0.05) 0px, transparent 55%),
+      radial-gradient(at 18% 85%, rgba(14, 165, 233, 0.055) 0px, transparent 50%);
+  }
+
+  /* 繊細なフィルムノイズテクスチャ */
+  .film-noise {
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.028'/%3E%3C/svg%3E");
+  }
+
+  .font-heading {
+    font-family: "M PLUS 1", "BIZ UDPGothic", sans-serif;
+    letter-spacing: -0.015em;
+  }
+
+  .font-en {
+    font-family: "Plus Jakarta Sans", sans-serif;
+  }
+
+  .font-logo {
+    font-family: "Rubik", sans-serif;
+  }
+
+  .preview-frame {
+    transition: max-width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  @keyframes floatSlow {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-7px) rotate(2deg); }
+  }
+
+  @keyframes floatReverse {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(7px) rotate(-2deg); }
+  }
+
+  .animate-float-1 {
+    animation: floatSlow 7s ease-in-out infinite;
+  }
+
+  .animate-float-2 {
+    animation: floatReverse 8s ease-in-out infinite;
   }
 }

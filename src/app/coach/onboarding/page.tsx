@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { CoachOnboardingWizard } from '@/components/coach/CoachOnboardingWizard'
+import CoachOnboardingDemo from '@/components/kids-coach/CoachOnboardingDemo'
 
 export const dynamic = 'force-dynamic'
 
@@ -11,6 +12,14 @@ interface PageProps {
 }
 
 export default async function CoachOnboardingPage({ searchParams }: PageProps) {
+    // ローカルデモ環境など Supabase 未設定時はキッズコーチナビ用のデモ画面を表示
+    if (
+        !process.env.NEXT_PUBLIC_SUPABASE_URL ||
+        !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    ) {
+        return <CoachOnboardingDemo />
+    }
+
     const { demo } = await searchParams
     const supabase = await createClient()
 
