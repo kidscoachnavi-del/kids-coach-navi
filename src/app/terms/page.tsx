@@ -6,8 +6,8 @@ import KidsCoachFooter from '@/components/kids-coach/Footer';
 import { ArrowLeft } from 'lucide-react';
 
 export const metadata: Metadata = {
-  title: '利用規約 | キッズコーチナビ by Wellne',
-  description: 'キッズコーチナビ by Wellne（運営：株式会社Wellne）の利用規約です。',
+  title: '利用規約 | キッズコーチナビ',
+  description: 'キッズコーチナビ（運営：SWIM PARTNERS）の利用規約です。',
 };
 
 export default function TermsPage() {
@@ -33,13 +33,13 @@ export default function TermsPage() {
               <h1 className="font-heading text-xl sm:text-2xl font-bold text-[#2C2B29]">
                 キッズコーチナビ 利用規約
               </h1>
-              <p className="text-[11px] text-[#8A857B]">運営会社：株式会社Wellne</p>
+              <p className="text-[11px] text-[#8A857B]">運営事業者：SWIM PARTNERS</p>
             </header>
 
             <section className="space-y-2">
               <h2 className="font-heading text-base font-bold text-[#2C2B29]">第1条（適用・目的）</h2>
               <p>
-                本規約は、株式会社Wellne（以下「当社」といいます）が運営する出張個別スポーツ指導マッチングサービス「キッズコーチナビ」（以下「本サービス」といいます）の利用条件を定めるものです。保護者様および認定コーチは、本規約に同意の上で本サービスを利用するものとします。
+                本規約は、SWIM PARTNERS（以下「当社」といいます）が運営する出張個別スポーツ指導マッチングサービス「キッズコーチナビ」（以下「本サービス」といいます）の利用条件を定めるものです。保護者様および認定コーチは、本規約に同意の上で本サービスを利用するものとします。
               </p>
             </section>
 

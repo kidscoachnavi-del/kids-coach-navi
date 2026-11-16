@@ -6,8 +6,8 @@ import KidsCoachFooter from '@/components/kids-coach/Footer';
 import { ArrowLeft } from 'lucide-react';
 
 export const metadata: Metadata = {
-  title: 'プライバシーポリシー | キッズコーチナビ by Wellne',
-  description: 'キッズコーチナビ by Wellne（運営：株式会社Wellne）のプライバシーポリシーです。',
+  title: 'プライバシーポリシー | キッズコーチナビ',
+  description: 'キッズコーチナビ（運営：SWIM PARTNERS）のプライバシーポリシーです。',
 };
 
 export default function PrivacyPage() {
@@ -33,7 +33,7 @@ export default function PrivacyPage() {
               <h1 className="font-heading text-xl sm:text-2xl font-bold text-[#2C2B29]">
                 プライバシーポリシー
               </h1>
-              <p className="text-[11px] text-[#8A857B]">運営会社：株式会社Wellne</p>
+              <p className="text-[11px] text-[#8A857B]">運営事業者：SWIM PARTNERS</p>
             </header>
 
             <section className="space-y-2">
