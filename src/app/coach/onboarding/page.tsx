@@ -25,8 +25,9 @@ export default async function CoachOnboardingPage({ searchParams }: PageProps) {
 
     const { data: { user } } = await supabase.auth.getUser()
 
+    // 未ログイン時はキッズコーチナビ用の新規コーチ登録・審査画面を表示
     if (!user) {
-        redirect('/login')
+        return <CoachOnboardingDemo />
     }
 
     const { data: profile } = await supabase
@@ -35,8 +36,9 @@ export default async function CoachOnboardingPage({ searchParams }: PageProps) {
         .eq('id', user.id)
         .single()
 
+    // プロフィール未作成環境（キッズコーチナビ単体環境など）もデモ画面を表示
     if (!profile) {
-        redirect('/login')
+        return <CoachOnboardingDemo />
     }
 
     // デモモードは管理者ロール（admin）のみ許可

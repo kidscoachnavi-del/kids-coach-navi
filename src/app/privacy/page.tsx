@@ -33,7 +33,9 @@ export default function PrivacyPage() {
               <h1 className="font-heading text-xl sm:text-2xl font-bold text-[#2C2B29]">
                 プライバシーポリシー
               </h1>
-              <p className="text-[11px] text-[#8A857B]">運営事業者：SWIM PARTNERS</p>
+              <p className="text-[11px] text-[#8A857B]">
+                運営事業者：SWIM PARTNERS ／ 運営責任者：新吉 航大（〒150-0021 東京都渋谷区恵比寿西２丁目４−８ ウィンド恵比寿ビル 8F）
+              </p>
             </header>
 
             <section className="space-y-2">
@@ -51,16 +53,30 @@ export default function PrivacyPage() {
             </section>
 
             <section className="space-y-2">
-              <h2 className="font-heading text-base font-bold text-[#2C2B29]">3. コーチの顔写真・撮影画像の利用目的</h2>
+              <h2 className="font-heading text-base font-bold text-[#2C2B29]">3. コーチの顔写真・撮影画像の利用目的と保管期間</h2>
               <p>
-                コーチ登録時に撮影された顔画像は、なりすまし防止および当社の目視本人確認審査の目的のみに利用し、非公開領域にて厳重に保管します。公開プロフィール用顔写真のみ、予約検討中の保護者様への表示に使用します。
+                コーチ登録時に撮影されたカメラ画像は、なりすまし防止および当社の目視本人確認審査の目的のみに利用し、非公開領域にて厳重に保管します（退会または利用終了後は当社規定に基づき速やかに削除いたします）。公開プロフィール用顔写真のみ、予約検討中の保護者様への表示に使用します。
               </p>
             </section>
 
             <section className="space-y-2">
-              <h2 className="font-heading text-base font-bold text-[#2C2B29]">4. 第三者提供・安全管理</h2>
+              <h2 className="font-heading text-base font-bold text-[#2C2B29]">4. Cookie・外部サービス連携</h2>
               <p>
-                法令に基づく場合を除き、ご本人の同意なく第三者へ個人情報を提供いたしません。チャット内のメッセージは、連絡先の不正交換・トラブル防止のため自動保護フィルターおよび運営監査の対象となります。
+                本サービスでは、利便性向上・セッション維持・アクセス状況把握のために Cookie 等を使用します。また、決済処理のために必要な情報を Stripe 社（海外サーバーを含む場合があります）へ送信します。
+              </p>
+            </section>
+
+            <section className="space-y-2">
+              <h2 className="font-heading text-base font-bold text-[#2C2B29]">5. 保有個人データの開示・訂正・削除請求窓口</h2>
+              <p>
+                法令に基づく場合を除き、ご本人の同意なく第三者へ個人情報を提供いたしません。ご自身の個人情報の開示・訂正・利用停止・削除をご希望の場合は、本サービス内の
+                <Link
+                  href="/contact"
+                  className="font-bold text-[#3E8E84] underline hover:text-[#2f7169] mx-0.5"
+                >
+                  お問い合わせフォーム
+                </Link>
+                よりご連絡ください。ご本人確認の上、遅滞なく対応いたします。
               </p>
             </section>
           </article>

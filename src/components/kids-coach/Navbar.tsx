@@ -37,7 +37,7 @@ export default function KidsCoachNavbar() {
   return (
     <header className="sticky top-0 z-40 bg-[#FDFBF7]/95 backdrop-blur-md border-b border-[#EADBCC]">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 sm:h-20 flex items-center justify-between gap-3">
-        {/* ブランドロゴ（幾何学カードアイコン ＋ Kids Coach Navi by Wellne） */}
+        {/* ブランドロゴ（幾何学カードアイコン ＋ Kids Coach Navi by SWIM PARTNERS） */}
         <Link href="/" className="flex items-center gap-2.5 sm:gap-3 group shrink-0 min-w-0">
           <div className="relative w-7 h-9 shrink-0">
             <div className="absolute inset-0 bg-[#F7D668] rounded-md rotate-12 group-hover:rotate-6 transition-transform" />
@@ -50,7 +50,7 @@ export default function KidsCoachNavbar() {
               Kids Coach Navi
             </span>
             <span className="text-[10px] xl:text-xs text-[#5E5B54] font-bold tracking-wider block mt-0.5 whitespace-nowrap">
-              キッズコーチナビ by Wellne
+              キッズコーチナビ by SWIM PARTNERS
             </span>
           </div>
         </Link>

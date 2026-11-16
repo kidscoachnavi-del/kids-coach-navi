@@ -29,13 +29,13 @@ export async function generateMetadata({
 
   if (!category) {
     return {
-      title: '種目が見つかりません | キッズコーチナビ by Wellne',
+      title: '種目が見つかりません | キッズコーチナビ by SWIM PARTNERS',
     };
   }
 
-  const siteUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://kidscoach-navi.wellne.co.jp';
-  const title = `子ども向け${category.name}の出張マンツーマン指導 | キッズコーチナビ by Wellne`;
-  const description = `${category.name}のマンツーマン指導・出張個人レッスン。${category.shortDesc}。入会金・月会費なしの都度払いで、ご希望の公園や利用可能な施設でプロコーチが丁寧に指導。運営：株式会社Wellne。`;
+  const siteUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://kids-coach-navi.vercel.app';
+  const title = `子ども向け${category.name}の出張マンツーマン指導 | キッズコーチナビ by SWIM PARTNERS`;
+  const description = `${category.name}のマンツーマン指導・出張個人レッスン。${category.shortDesc}。入会金・月会費なしの都度払いで、ご希望の公園や利用可能な施設でプロコーチが丁寧に指導。運営：SWIM PARTNERS。`;
 
   return {
     title,
@@ -76,8 +76,8 @@ export default async function SportCategoryPage({ params }: SportPageProps) {
     name: `キッズコーチナビ ${category.name}指導`,
     provider: {
       '@type': 'Organization',
-      name: '株式会社Wellne',
-      url: 'https://wellne.co.jp',
+      name: 'SWIM PARTNERS',
+      url: 'https://kids-coach-navi.vercel.app',
     },
     description: category.longDesc,
     offers: {

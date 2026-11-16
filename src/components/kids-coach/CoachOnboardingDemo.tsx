@@ -59,7 +59,8 @@ export default function CoachOnboardingDemo() {
   const [isConnectingStripe, setIsConnectingStripe] = useState(false);
   const [stripeConnected, setStripeConnected] = useState(false);
 
-  // 登録申請状態（false: 情報入力中 / true: 申請完了・運営目視審査待ち）
+  // 登録申請・規約同意状態（false: 情報入力中 / true: 申請完了・運営目視審査待ち）
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
 
   const coreAreas = AREA_LIST.filter((a) => CORE_AREA_SLUGS.includes(a.slug));
@@ -271,10 +272,11 @@ export default function CoachOnboardingDemo() {
   const hasVerifiedLiveSelfie =
     Boolean(liveSelfieUrl) && selfieVerifyScore !== null;
   const isComplianceReady = hasAvatar && hasVerifiedLiveSelfie && stripeConnected;
+  const canSubmit = isComplianceReady && agreedToTerms;
 
   const handleCompleteOnboarding = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isComplianceReady) return;
+    if (!canSubmit) return;
     setIsSubmitted(true);
   };
 
@@ -743,15 +745,50 @@ export default function CoachOnboardingDemo() {
                   </div>
                 </div>
 
+                {/* コーチ利用規約・プライバシーポリシー同意（必須） */}
+                <div className="p-3.5 rounded-2xl border border-[#EADBCC] bg-[#FDFBF7]">
+                  <label className="flex items-start gap-2.5 cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      required
+                      checked={agreedToTerms}
+                      onChange={(e) => setAgreedToTerms(e.target.checked)}
+                      className="mt-0.5 rounded border-[#EADBCC] text-[#E3644F] focus:ring-[#E3644F]"
+                    />
+                    <span className="text-[11px] text-[#2C2B29] leading-relaxed">
+                      <Link
+                        href="/coach/terms"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-bold text-[#3E8E84] underline hover:text-[#2f7169]"
+                      >
+                        コーチ利用規約
+                      </Link>
+                      （自己都合キャンセル・業務委託条件・報酬規定を含む）および
+                      <Link
+                        href="/privacy"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-bold text-[#3E8E84] underline hover:text-[#2f7169]"
+                      >
+                        プライバシーポリシー
+                      </Link>
+                      に同意します <span className="text-[#E3644F] font-bold">*</span>
+                    </span>
+                  </label>
+                </div>
+
                 <button
                   type="submit"
-                  disabled={!isComplianceReady}
+                  disabled={!canSubmit}
                   className="w-full min-h-12 py-3 px-4 rounded-full bg-[#E3644F] hover:bg-[#d05540] text-white font-bold text-xs sm:text-sm flex items-center justify-center transition-colors shadow-sm cursor-pointer disabled:opacity-45 disabled:cursor-not-allowed text-center"
                 >
                   <span>
-                    {isComplianceReady
+                    {canSubmit
                       ? '登録情報を送信して審査へ進む'
-                      : '必須3項目をすべて完了すると審査申請できます'}
+                      : !isComplianceReady
+                        ? '必須3項目をすべて完了すると審査申請できます'
+                        : 'コーチ利用規約への同意が必要です'}
                   </span>
                 </button>
               </div>

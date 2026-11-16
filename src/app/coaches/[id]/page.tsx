@@ -10,7 +10,7 @@ import KidsCoachFooter from '@/components/kids-coach/Footer';
 import JsonLd from '@/components/kids-coach/JsonLd';
 import { ChevronRight, Shield } from 'lucide-react';
 
-const SITE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://kidscoach-navi.wellne.co.jp';
+const SITE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://kids-coach-navi.vercel.app';
 
 interface CoachPageProps {
   params: Promise<{
@@ -30,7 +30,7 @@ export async function generateMetadata({
     };
   }
 
-  const title = `${coach.name} コーチの詳細・予約 | キッズコーチナビ by Wellne`;
+  const title = `${coach.name} コーチの詳細・予約 | キッズコーチナビ by SWIM PARTNERS`;
   const description = `${coach.name} コーチ（${coach.title}）のマンツーマン出張レッスン予約。${coach.specialties.join('、')}などの得意種目。直近の空き日程から都度払いで予約可能。`;
 
   return {

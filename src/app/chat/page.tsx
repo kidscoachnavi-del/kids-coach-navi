@@ -1093,8 +1093,8 @@ export default function ChatListPage() {
       {/* チャット操作を邪魔しない最小限フッター */}
       <footer className="border-t border-[#EADBCC]/70 bg-[#FDFBF7] py-3 px-4 text-[11px] text-[#8A857B]">
         <div className="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-2">
-          <span>キッズコーチナビ by Wellne</span>
-          <span className="font-en">© 2026 Wellne Inc.</span>
+          <span>キッズコーチナビ by SWIM PARTNERS</span>
+          <span className="font-en">© 2026 SWIM PARTNERS</span>
         </div>
       </footer>
     </div>

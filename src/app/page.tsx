@@ -3,10 +3,10 @@ import { Metadata } from 'next';
 import HomePageClient from '@/components/kids-coach/HomePageClient';
 import JsonLd from '@/components/kids-coach/JsonLd';
 
-const SITE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://kidscoach-navi.wellne.co.jp';
+const SITE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://kids-coach-navi.vercel.app';
 
 export const metadata: Metadata = {
-  title: 'キッズコーチナビ by Wellne ｜ 子どもの本当の「できた！」に出会う',
+  title: 'キッズコーチナビ by SWIM PARTNERS ｜ 子どもの本当の「できた！」に出会う',
   description:
     '子どもには、運動の楽しさに出会って、自信に満ちた笑顔になって欲しい。入会金0円の都度払いで受けられる出張個別スポーツ指導マッチングサービス（世田谷区・目黒区・港区・渋谷区・品川区対応）。',
   keywords: [
@@ -24,14 +24,14 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'ja_JP',
     url: `${SITE_URL}/`,
-    siteName: 'キッズコーチナビ by Wellne',
-    title: 'キッズコーチナビ by Wellne ｜ 子どもの本当の「できた！」に出会う',
+    siteName: 'キッズコーチナビ by SWIM PARTNERS',
+    title: 'キッズコーチナビ by SWIM PARTNERS ｜ 子どもの本当の「できた！」に出会う',
     description:
       'かけっこ・学校体育（逆上がり/跳び箱/縄跳び）・水泳の出張マンツーマン指導。入会金0円・1回都度払いで、本人確認済みコーチが近隣の公園や利用可能施設へ出張します。',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'キッズコーチナビ by Wellne ｜ 子どもの本当の「できた！」に出会う',
+    title: 'キッズコーチナビ by SWIM PARTNERS ｜ 子どもの本当の「できた！」に出会う',
     description:
       '入会金0円・都度払いの子ども向け出張スポーツ個人レッスン。かけっこ・学校体育・水泳に対応。',
   },
@@ -43,11 +43,11 @@ export default function HomePage() {
     {
       '@context': 'https://schema.org',
       '@type': 'Organization',
-      name: 'キッズコーチナビ by Wellne',
+      name: 'キッズコーチナビ by SWIM PARTNERS',
       url: SITE_URL,
       parentOrganization: {
         '@type': 'Organization',
-        name: '株式会社Wellne',
+        name: 'SWIM PARTNERS',
       },
       areaServed: ['東京都世田谷区', '東京都目黒区', '東京都港区', '東京都渋谷区', '東京都品川区'],
     },
@@ -58,7 +58,7 @@ export default function HomePage() {
       serviceType: '子ども向け出張マンツーマン運動指導（かけっこ・学校体育克服・水泳）',
       provider: {
         '@type': 'Organization',
-        name: '株式会社Wellne',
+        name: 'SWIM PARTNERS',
       },
       areaServed: [
         { '@type': 'City', name: '世田谷区' },

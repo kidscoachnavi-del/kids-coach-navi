@@ -275,6 +275,9 @@ const FAQ_ITEMS: FaqItem[] = [
 
 export default function HomePageClient() {
   const [viewport, setViewport] = useState<ViewportMode>('desktop');
+  const [showPreviewBar, setShowPreviewBar] = useState<boolean>(
+    process.env.NODE_ENV !== 'production'
+  );
   const [selectedSport, setSelectedSport] = useState<SportKey>('kakekko');
   const [selectedArea, setSelectedArea] = useState<string>('世田谷区');
   const [voiceFilter, setVoiceFilter] = useState<VoiceSportFilter>('all');
@@ -332,18 +335,33 @@ export default function HomePageClient() {
 
   const currentCoach = COACH_DATA[selectedSport] || COACH_DATA.kakekko;
 
-  const viewportMaxWidth =
-    viewport === 'desktop'
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('preview') === '1') {
+        setShowPreviewBar(true);
+      }
+    }
+  }, []);
+
+  const viewportMaxWidth = !showPreviewBar
+    ? '100%'
+    : viewport === 'desktop'
       ? '100%'
       : viewport === 'tablet'
       ? '768px'
       : '390px';
 
   return (
-    <div className="min-h-screen bg-[#E2E8F0] text-[#2C2B29] font-sans antialiased overflow-x-hidden">
+    <div
+      className={`min-h-screen text-[#2C2B29] font-sans antialiased overflow-x-hidden ${
+        showPreviewBar ? 'bg-[#E2E8F0]' : 'bg-[#FDFBF7]'
+      }`}
+    >
       {/* ============================================================== */}
-      {/* プレビューコントロールバー（最上部固定）                       */}
+      {/* プレビューコントロールバー（開発環境・?preview=1時のみ表示）     */}
       {/* ============================================================== */}
+      {showPreviewBar && (
       <aside className="sticky top-0 z-100 bg-slate-900 text-white px-3 sm:px-4 py-2 sm:py-2.5 shadow-md flex flex-wrap items-center justify-between gap-2 sm:gap-3 border-b border-slate-800 text-xs sm:text-sm max-w-full overflow-x-hidden">
         <div className="flex items-center gap-2 min-w-0">
           <span className="inline-flex items-center justify-center w-6 h-6 rounded-lg bg-[#E3644F] font-en font-extrabold text-white text-xs shrink-0">
@@ -402,15 +420,24 @@ export default function HomePageClient() {
           <span>手触りのある装丁文字・ミニマルアイコン設計</span>
         </div>
       </aside>
+      )}
 
       {/* ============================================================== */}
       {/* プレビューラッパーコンテナ                                      */}
       {/* ============================================================== */}
-      <div className="w-full flex justify-center py-0 sm:py-6 bg-slate-200">
+      <div
+        className={`w-full flex justify-center ${
+          showPreviewBar ? 'py-0 sm:py-6 bg-slate-200' : 'bg-[#FDFBF7]'
+        }`}
+      >
         <div
           id="viewport-container"
           style={{ maxWidth: viewportMaxWidth }}
-          className="preview-frame w-full bg-[#FDFBF7] shadow-2xl transition-all duration-300 sm:rounded-3xl overflow-hidden border border-[#EADBCC]"
+          className={`w-full bg-[#FDFBF7] overflow-hidden ${
+            showPreviewBar
+              ? 'preview-frame shadow-2xl transition-all duration-300 sm:rounded-3xl border border-[#EADBCC]'
+              : ''
+          }`}
         >
           {/* ==================== 1. Header ==================== */}
           <header className="w-full pt-6 pb-2 px-6 sm:px-10 flex items-center justify-between max-w-5xl mx-auto relative z-20">
@@ -1626,10 +1653,16 @@ export default function HomePageClient() {
                   キッズコーチナビ（Kids Coach Navi）
                 </p>
                 <p className="text-white/50 text-[10px] mt-0.5">
-                  運営会社：株式会社Wellne
+                  運営事業者：SWIM PARTNERS
                 </p>
               </div>
               <div className="flex flex-wrap justify-center gap-4 text-white/70 text-[11px]">
+                <Link href="/faq" className="hover:text-white transition-colors">
+                  よくある質問
+                </Link>
+                <Link href="/contact" className="hover:text-white transition-colors">
+                  お問い合わせ
+                </Link>
                 <Link href="/terms" className="hover:text-white transition-colors">
                   利用規約
                 </Link>
@@ -1641,7 +1674,7 @@ export default function HomePageClient() {
                 </Link>
               </div>
               <p className="text-white/40 text-[10px] pt-2 font-en">
-                © 2026 Wellne Inc. All rights reserved.
+                © 2026 SWIM PARTNERS. All rights reserved.
               </p>
             </div>
           </footer>

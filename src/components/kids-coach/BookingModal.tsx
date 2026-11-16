@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import { Coach, AvailableSlot } from '@/data/kids-coach-mock';
 import {
   Clock,
@@ -37,8 +38,9 @@ export default function BookingModal({
   const [phone, setPhone] = useState('090-0000-0035');
   const [membershipNumber, setMembershipNumber] = useState('');
 
-  // Stripeモックモーダル開閉
+  // Stripeモックモーダル開閉・規約同意状態
   const [showStripeModal, setShowStripeModal] = useState(false);
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
 
   if (!isOpen) return null;
 
@@ -54,6 +56,7 @@ export default function BookingModal({
 
   const handleSubmitToStripe = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!agreedToTerms) return;
     setShowStripeModal(true);
   };
 
@@ -210,11 +213,45 @@ export default function BookingModal({
               />
             </div>
 
+            {/* 初回予約時の利用規約・プライバシーポリシー同意（必須） */}
+            <div className="p-3 rounded-xl border border-[#EADBCC] bg-white">
+              <label className="flex items-start gap-2 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  required
+                  checked={agreedToTerms}
+                  onChange={(e) => setAgreedToTerms(e.target.checked)}
+                  className="mt-0.5 rounded border-[#EADBCC] text-[#E3644F] focus:ring-[#E3644F]"
+                />
+                <span className="text-[11px] text-[#2C2B29] leading-relaxed">
+                  <Link
+                    href="/terms"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-bold text-[#3E8E84] underline hover:text-[#2f7169]"
+                  >
+                    利用規約（保護者・受講者様向け）
+                  </Link>
+                  、
+                  <Link
+                    href="/privacy"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-bold text-[#3E8E84] underline hover:text-[#2f7169]"
+                  >
+                    プライバシーポリシー
+                  </Link>
+                  に同意します <span className="text-[#E3644F] font-bold">*</span>
+                </span>
+              </label>
+            </div>
+
             {/* 決済へ進むボタン */}
             <div className="pt-2 space-y-2.5">
               <button
                 type="submit"
-                className="w-full h-12 rounded-full bg-[#E3644F] hover:bg-[#d05540] text-white font-bold text-sm flex items-center justify-center gap-2 shadow-sm active:scale-[0.99] transition-all cursor-pointer"
+                disabled={!agreedToTerms}
+                className="w-full h-12 rounded-full bg-[#E3644F] hover:bg-[#d05540] text-white font-bold text-sm flex items-center justify-center gap-2 shadow-sm active:scale-[0.99] transition-all cursor-pointer disabled:opacity-45 disabled:cursor-not-allowed"
               >
                 <Lock className="w-4 h-4" strokeWidth={1.75} />
                 <span>お支払い情報の入力へ進む</span>

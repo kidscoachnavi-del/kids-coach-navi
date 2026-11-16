@@ -237,13 +237,22 @@ export default function CoachDashboardPage() {
               </h1>
             </div>
 
-            <Link
-              href="/coach/onboarding"
-              className="h-9 px-3.5 rounded-full bg-white border border-[#EADBCC] hover:border-[#3E8E84] text-xs font-bold text-[#2C2B29] hover:text-[#3E8E84] inline-flex items-center gap-1.5 transition-colors whitespace-nowrap"
-            >
-              <ExternalLink className="w-3.5 h-3.5 shrink-0" strokeWidth={1.75} />
-              <span>新規コーチ登録・審査画面を見る</span>
-            </Link>
+            <div className="flex flex-wrap items-center gap-2">
+              <Link
+                href="/coach/terms"
+                className="h-9 px-3.5 rounded-full bg-white border border-[#EADBCC] hover:border-[#3E8E84] text-xs font-bold text-[#5E5B54] hover:text-[#3E8E84] inline-flex items-center gap-1.5 transition-colors whitespace-nowrap"
+              >
+                <Shield className="w-3.5 h-3.5 shrink-0" strokeWidth={1.75} />
+                <span>コーチ利用規約</span>
+              </Link>
+              <Link
+                href="/coach/onboarding"
+                className="h-9 px-3.5 rounded-full bg-white border border-[#EADBCC] hover:border-[#3E8E84] text-xs font-bold text-[#2C2B29] hover:text-[#3E8E84] inline-flex items-center gap-1.5 transition-colors whitespace-nowrap"
+              >
+                <ExternalLink className="w-3.5 h-3.5 shrink-0" strokeWidth={1.75} />
+                <span>新規コーチ登録・審査画面を見る</span>
+              </Link>
+            </div>
           </div>
 
           {/* コーチプロフィール見出しボックス */}
@@ -273,7 +282,7 @@ export default function CoachDashboardPage() {
             <div className="bg-[#FDFBF7] px-3.5 py-2.5 sm:p-3.5 rounded-2xl border border-[#EADBCC] w-full lg:w-auto flex items-center justify-between lg:block lg:text-right text-xs shrink-0">
               <span className="text-[10px] text-[#5E5B54] font-bold block">手数料配分ルール</span>
               <div className="font-bold text-[#2C2B29] whitespace-nowrap">
-                コーチ受取 <span className="font-en text-[#E3644F] font-extrabold text-sm sm:text-base">75%</span> / Wellne 25%
+                コーチ受取 <span className="font-en text-[#E3644F] font-extrabold text-sm sm:text-base">75%</span> / SWIM PARTNERS 25%
               </div>
             </div>
           </div>

@@ -64,6 +64,7 @@ export default function CheckoutPage() {
   const [savedProfile, setSavedProfile] = useState<SavedCheckoutProfile | null>(null);
   const [useOneClickMode, setUseOneClickMode] = useState(false);
   const [saveForFuture, setSaveForFuture] = useState(true);
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
 
   // 決済処理・完了状態
   const [isProcessing, setIsProcessing] = useState(false);
@@ -329,6 +330,17 @@ export default function CheckoutPage() {
                         別のカード・情報で支払う
                       </button>
                     </div>
+                    <p className="text-[11px] text-[#8A857B] leading-relaxed">
+                      ※ ワンクリック決済では、初回予約時にご同意いただいた
+                      <Link href="/terms" target="_blank" rel="noopener noreferrer" className="text-[#3E8E84] underline mx-0.5">
+                        利用規約
+                      </Link>
+                      および
+                      <Link href="/privacy" target="_blank" rel="noopener noreferrer" className="text-[#3E8E84] underline mx-0.5">
+                        プライバシーポリシー
+                      </Link>
+                      が引き続き適用されます。
+                    </p>
                   </div>
                 ) : (
                   <>
@@ -523,12 +535,54 @@ export default function CheckoutPage() {
                     </div>
                   </div>
 
+                  {/* 初回予約時の利用規約・プライバシーポリシー同意（必須） */}
+                  <div className="p-3.5 rounded-2xl border border-[#EADBCC] bg-[#FDFBF7]">
+                    <label className="flex items-start gap-2.5 cursor-pointer select-none">
+                      <input
+                        type="checkbox"
+                        required
+                        checked={agreedToTerms}
+                        onChange={(e) => setAgreedToTerms(e.target.checked)}
+                        className="mt-0.5 rounded border-[#EADBCC] text-[#E3644F] focus:ring-[#E3644F]"
+                      />
+                      <span className="text-[11px] text-[#2C2B29] leading-relaxed">
+                        <Link
+                          href="/terms"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="font-bold text-[#3E8E84] underline hover:text-[#2f7169]"
+                        >
+                          利用規約（保護者・受講者様向け）
+                        </Link>
+                        、
+                        <Link
+                          href="/privacy"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="font-bold text-[#3E8E84] underline hover:text-[#2f7169]"
+                        >
+                          プライバシーポリシー
+                        </Link>
+                        および
+                        <Link
+                          href="/tokushoho"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="font-bold text-[#3E8E84] underline hover:text-[#2f7169]"
+                        >
+                          キャンセルポリシー（特商法表記）
+                        </Link>
+                        に同意します <span className="text-[#E3644F] font-bold">*</span>
+                      </span>
+                    </label>
+                  </div>
+
                   {/* 決済確定ボタン */}
                   <div className="pt-2">
                     <button
                       type="submit"
-                      disabled={isProcessing}
-                      className="w-full h-12 px-4 rounded-full bg-[#E3644F] hover:bg-[#d05540] text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-50 shadow-sm whitespace-nowrap"
+                      disabled={isProcessing || !agreedToTerms}
+                      className="w-full h-12 px-4 rounded-full bg-[#E3644F] hover:bg-[#d05540] text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shadow-sm whitespace-nowrap"
                     >
                       {isProcessing ? (
                         <>

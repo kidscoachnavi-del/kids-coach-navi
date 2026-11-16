@@ -31,13 +31,13 @@ export async function generateMetadata({
 
   if (!category || !area) {
     return {
-      title: 'ページが見つかりません | キッズコーチナビ by Wellne',
+      title: 'ページが見つかりません | キッズコーチナビ by SWIM PARTNERS',
     };
   }
 
   return {
     title: `【${area.name}】子ども向け${category.name}の出張マンツーマン指導 | キッズコーチナビ`,
-    description: `${area.prefecture}${area.name}で受けられる子ども向け${category.name}の出張レッスン。公園や個人指導可能な施設へプロコーチが出張。入会金・月会費なしの都度払い。運営：株式会社Wellne。`,
+    description: `${area.prefecture}${area.name}で受けられる子ども向け${category.name}の出張レッスン。公園や個人指導可能な施設へプロコーチが出張。入会金・月会費なしの都度払い。運営：SWIM PARTNERS。`,
   };
 }
 
@@ -71,8 +71,8 @@ export default async function SportAreaPage({ params }: SportAreaPageProps) {
     '@type': 'LocalBusiness',
     name: `キッズコーチナビ ${area.name} ${category.name}出張指導`,
     image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=600&q=80',
-    '@id': `https://kidscoachnavi.wellne.co.jp/sports/${sport_slug}/${area_slug}`,
-    url: `https://kidscoachnavi.wellne.co.jp/sports/${sport_slug}/${area_slug}`,
+    '@id': `https://kids-coach-navi.vercel.app/sports/${sport_slug}/${area_slug}`,
+    url: `https://kids-coach-navi.vercel.app/sports/${sport_slug}/${area_slug}`,
     telephone: '03-0000-0035',
     priceRange: '¥5,000〜',
     address: {
@@ -88,8 +88,8 @@ export default async function SportAreaPage({ params }: SportAreaPageProps) {
     },
     parentOrganization: {
       '@type': 'Organization',
-      name: '株式会社Wellne',
-      url: 'https://wellne.co.jp',
+      name: 'SWIM PARTNERS',
+      url: 'https://kids-coach-navi.vercel.app',
     },
     makesOffer: {
       '@type': 'Offer',

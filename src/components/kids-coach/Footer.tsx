@@ -100,6 +100,12 @@ export default function KidsCoachFooter({
               <Link href="/chat" className="hover:text-[#F7D668] transition-colors">
                 チャット一覧
               </Link>
+              <Link href="/faq" className="hover:text-[#F7D668] transition-colors">
+                よくある質問
+              </Link>
+              <Link href="/contact" className="hover:text-[#F7D668] transition-colors">
+                お問い合わせ
+              </Link>
               <Link href="/terms" className="hover:text-[#F7D668] transition-colors">
                 利用規約
               </Link>
@@ -113,11 +119,11 @@ export default function KidsCoachFooter({
           </div>
 
           <div className="pt-6 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs text-white/60">
-            <div>運営会社：株式会社Wellne（ウェルネ）</div>
+            <div>運営事業者：SWIM PARTNERS</div>
             <div className="text-white/75">
               本人確認済コーチによるマンツーマン指導 ／ クレジットカード事前決済
             </div>
-            <div className="font-en">&copy; 2026 Wellne Inc. All rights reserved.</div>
+            <div className="font-en">&copy; 2026 SWIM PARTNERS. All rights reserved.</div>
           </div>
         </div>
       </footer>

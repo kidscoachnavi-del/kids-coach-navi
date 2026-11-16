@@ -8,11 +8,11 @@ export default function FeaturesSection() {
   const safetyGuarantees = [
     {
       icon: ShieldCheck,
-      code: 'GOVERNANCE 01 / LIABILITY COVERAGE',
-      title: '全レッスンに「対人・対物賠償責任保険」が自動付帯',
-      desc: '公園や公営プールでの練習中、万が一お子様がケガをされた場合や、周囲の物・第三者に損害を与えてしまった場合でも、株式会社Wellneが契約する賠償責任保険が全レッスンに自動で適用されます。追加の保険料負担はありません。',
-      fact: '追加保険料 ¥0 / 全予約に自動付帯',
-      badge: '補償制度完備',
+      code: 'GOVERNANCE 01 / SAFETY SUPERVISION',
+      title: '保護者様ご見学・事前ヒアリングによる安全第一の指導体制',
+      desc: '小さなお子様でも安心して取り組めるよう、原則として保護者様のご見学・同伴のもとで安全管理を徹底しています。事前に体調や既往歴・運動経験を確認し、無理のないメニューで指導します。（※万が一に備えたスポーツ保険等は各ご家庭での任意加入を推奨しております）',
+      fact: '保護者同伴・安全管理マニュアル徹底',
+      badge: '安全管理徹底',
     },
     {
       icon: BadgeCheck,
@@ -61,11 +61,11 @@ export default function FeaturesSection() {
             <h2 className="font-jp-serif text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-900 tracking-[0.04em] leading-[1.45]">
               大切な子どもを預けるからこそ、
               <br className="hidden sm:inline" />
-              保険・審査・決済の安全網を徹底しています。
+              安全管理・審査・決済の仕組みを徹底しています。
             </h2>
           </div>
           <p className="text-xs sm:text-sm text-slate-600 max-w-md tracking-[0.03em] leading-[1.9]">
-            個人間SNSでの直接契約や現金手渡しに伴うトラブルをゼロにするため、株式会社Wellneがプラットフォームとして4つの安全基準を担保しています。
+            個人間SNSでの直接契約や現金手渡しに伴うトラブルをゼロにするため、SWIM PARTNERSがプラットフォームとして4つの安全基準を担保しています。
           </p>
         </div>
 
@@ -108,7 +108,7 @@ export default function FeaturesSection() {
                     <span>{item.fact}</span>
                   </div>
                   <span className="font-mono text-[10px] tracking-[0.16em] text-slate-400 uppercase">
-                    WELLNE STANDARD
+                    SWIM PARTNERS STANDARD
                   </span>
                 </div>
               </div>
