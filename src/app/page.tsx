@@ -70,8 +70,7 @@ export default function HomePage() {
       offers: {
         '@type': 'AggregateOffer',
         priceCurrency: 'JPY',
-        lowPrice: 5500,
-        highPrice: 8000,
+        lowPrice: 5000,
         offerCount: 3,
       },
     },

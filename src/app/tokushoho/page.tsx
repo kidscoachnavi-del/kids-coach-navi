@@ -12,12 +12,12 @@ export const metadata: Metadata = {
 
 export default function TokushohoPage() {
   const rows = [
-    { label: '運営事業者', value: '株式会社Wellne' },
+    { label: '運営事業者', value: 'SWIM PARTNERS' },
     { label: 'サービス名称', value: 'キッズコーチナビ（Kids Coach Navi）' },
     { label: '所在地・連絡先', value: '東京都内（お問い合わせは本サービス内フォームおよび公式窓口より受け付けております）' },
     {
       label: '販売価格（レッスン料金）',
-      value: 'コーチ・レッスンごとに設定された金額（目安：60分 5,500円〜8,000円前後・税込・出張交通費込）。入会金・月会費は無料です。',
+      value: 'コーチ・レッスンごとに設定された金額（最低5,000円〜／コーチが設定する税込・出張交通費込の料金）。入会金・月会費は無料です。',
     },
     {
       label: '商品代金以外の必要料金',
