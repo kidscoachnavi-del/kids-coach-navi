@@ -54,7 +54,7 @@ export default function CoachProfileHeader({ coach }: CoachProfileHeaderProps) {
             </span>
             <span className="inline-flex items-center gap-1.5 bg-[#FCE7A2]/80 px-3 py-1 rounded-full text-xs font-bold text-[#2C2B29]">
               <Check className="w-3.5 h-3.5 text-[#3E8E84] shrink-0" strokeWidth={2.2} />
-              <span>1回から単発受講OK</span>
+              <span>1回ごとの単発予約（都度払い）</span>
             </span>
           </div>
 

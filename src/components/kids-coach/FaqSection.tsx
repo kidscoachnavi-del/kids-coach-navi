@@ -62,7 +62,7 @@ export default function FaqSection() {
             <div className="depth-card rounded-xl p-5 sm:p-6 space-y-3">
               <div className="flex items-center gap-2 text-xs font-bold text-slate-900 tracking-[0.03em]">
                 <ShieldCheck className="w-4 h-4 text-sky-600 shrink-0" />
-                <span>入会金0円・1回から気軽に体験可能</span>
+                <span>入会金0円・1回ごとの完全都度払い</span>
               </div>
               <p className="text-xs text-slate-600 tracking-[0.02em] leading-[1.8]">
                 まずはご希望の種目・エリアで対応可能なコーチのプロフィールと空き日程をご覧ください。

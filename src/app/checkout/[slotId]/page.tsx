@@ -66,10 +66,11 @@ export default function CheckoutPage() {
   const [saveForFuture, setSaveForFuture] = useState(true);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
 
-  // 決済処理・完了状態
+  // 決済処理・完了・エラー状態
   const [isProcessing, setIsProcessing] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
-  const [createdBookingId] = useState('bk-demo-001');
+  const [paymentError, setPaymentError] = useState<string | null>(null);
+  const [createdBookingId, setCreatedBookingId] = useState('bk-demo-001');
 
   // 初回マウント時にStripe連携済み顧客プロフィールを読み込む（カード情報は一切保持しない）
   useEffect(() => {
@@ -104,15 +105,46 @@ export default function CheckoutPage() {
     setConcern('運動会前の走り方フォーム改善とスタートダッシュ');
   };
 
-  /** 初回・Stripe決済画面遷移モック */
-  const handlePay = (e: React.FormEvent) => {
+  /** 初回・Stripe Checkout 実API決済遷移 */
+  const handlePay = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!agreedToTerms || isProcessing) return;
+
     setIsProcessing(true);
-    setTimeout(() => {
-      try {
-        sessionStorage.setItem(`kcn_paid_${createdBookingId}`, '1');
-        if (saveForFuture) {
-          // カード情報は一切扱わず、Stripe側の顧客・決済手段参照IDのみを保存する
+    setPaymentError(null);
+
+    try {
+      const res = await fetch('/api/kcn/checkout/session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          slotId: slot.id,
+          serviceId: service.id,
+          coachId: coach.id,
+          parentName: parentName || 'テスト太郎',
+          parentEmail: parentEmail || 'test_taro@wellne.example.com',
+          parentPhone: parentPhone || '090-0000-0035',
+          membershipNumber,
+          studentName: studentName || 'テスト太郎',
+          studentAge,
+          notes: concern,
+          saveForFuture,
+        }),
+      });
+      const data = await res.json();
+
+      if (!res.ok || !data?.checkoutUrl) {
+        setPaymentError(data?.error || 'Stripe決済画面の作成に失敗しました。');
+        setIsProcessing(false);
+        return;
+      }
+
+      if (data.bookingId) {
+        setCreatedBookingId(data.bookingId);
+      }
+
+      if (saveForFuture) {
+        try {
           const profileToSave: SavedCheckoutProfile = {
             parentName: parentName || 'テスト太郎',
             parentEmail: parentEmail || 'test_taro@wellne.example.com',
@@ -120,33 +152,64 @@ export default function CheckoutPage() {
             membershipNumber: membershipNumber || '0035',
             studentName: studentName || 'テスト太郎',
             studentAge: studentAge || '小学2年生 (7歳)',
-            stripeCustomerId: `cus_mock_stripe_${membershipNumber || '0035'}`,
-            stripePaymentMethodId: `pm_mock_stripe_${Date.now()}`,
+            stripeCustomerId: 'cus_stripe_managed',
+            stripePaymentMethodId: 'pm_stripe_managed',
           };
           localStorage.setItem(SAVED_CHECKOUT_KEY, JSON.stringify(profileToSave));
           setSavedProfile(profileToSave);
+        } catch {
+          // ストレージ無効環境は無視
         }
-      } catch {
-        // ストレージ無効環境は無視
       }
+
+      window.location.href = data.checkoutUrl;
+    } catch {
+      setPaymentError('通信エラーが発生しました。時間をおいて再度お試しください。');
       setIsProcessing(false);
-      setIsCompleted(true);
-    }, 1500);
+    }
   };
 
-  /** 2回目以降のワンクリック決済 */
-  const handleOneClickPay = () => {
-    if (!savedProfile) return;
+  /** 2回目以降のワンクリック決済（実API） */
+  const handleOneClickPay = async () => {
+    if (!savedProfile || isProcessing) return;
     setIsProcessing(true);
-    setTimeout(() => {
-      try {
-        sessionStorage.setItem(`kcn_paid_${createdBookingId}`, '1');
-      } catch {
-        // ストレージ無効環境は無視
+    setPaymentError(null);
+
+    try {
+      const res = await fetch('/api/kcn/checkout/one-click', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          slotId: slot.id,
+          serviceId: service.id,
+          coachId: coach.id,
+          parentId: savedProfile.membershipNumber === '0035'
+            ? '07f961c0-5ec7-4209-9296-4011362452ed'
+            : '',
+          studentName: savedProfile.studentName,
+          studentAge: savedProfile.studentAge,
+          notes: concern,
+        }),
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        setPaymentError(
+          data?.error || 'ワンクリック決済に失敗しました。「別のカード・情報で支払う」をお試しください。'
+        );
+        setIsProcessing(false);
+        return;
+      }
+
+      if (data.bookingId) {
+        setCreatedBookingId(data.bookingId);
       }
       setIsProcessing(false);
       setIsCompleted(true);
-    }, 900);
+    } catch {
+      setPaymentError('通信エラーが発生しました。時間をおいて再度お試しください。');
+      setIsProcessing(false);
+    }
   };
 
   /** デモ用：保存済み決済情報をリセットして初回状態へ戻す */
@@ -297,6 +360,12 @@ export default function CheckoutPage() {
                         className="w-full p-3 rounded-xl border border-[#EADBCC] bg-[#FDFBF7] text-xs text-[#2C2B29] leading-relaxed focus:outline-none focus:border-[#E3644F] focus:bg-white"
                       />
                     </div>
+
+                    {paymentError && (
+                      <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-bold">
+                        {paymentError}
+                      </div>
+                    )}
 
                     <button
                       type="button"
@@ -576,6 +645,13 @@ export default function CheckoutPage() {
                       </span>
                     </label>
                   </div>
+
+                  {/* 決済エラー表示 */}
+                  {paymentError && (
+                    <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-bold">
+                      {paymentError}
+                    </div>
+                  )}
 
                   {/* 決済確定ボタン */}
                   <div className="pt-2">

@@ -58,6 +58,7 @@ export default function CoachOnboardingDemo() {
   // ③ Stripe Connect 連携状態
   const [isConnectingStripe, setIsConnectingStripe] = useState(false);
   const [stripeConnected, setStripeConnected] = useState(false);
+  const [stripeConnectError, setStripeConnectError] = useState<string | null>(null);
 
   // 登録申請・規約同意状態（false: 情報入力中 / true: 申請完了・運営目視審査待ち）
   const [agreedToTerms, setAgreedToTerms] = useState(false);
@@ -258,13 +259,37 @@ export default function CoachOnboardingDemo() {
     );
   };
 
-  /** Stripe Identity + Connect 自動本人確認・口座連携 */
-  const handleStripeConnectMock = () => {
+  /** Stripe Identity + Connect 自動本人確認・口座連携（実API呼び出し） */
+  const handleStripeConnect = async () => {
     setIsConnectingStripe(true);
-    setTimeout(() => {
+    setStripeConnectError(null);
+
+    try {
+      const res = await fetch('/api/kcn/coach/connect', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          coachId: '5bc775a8-db57-4483-a0a9-4267a9d8345a',
+          email: 'tanaka_coach@wellne.example.com',
+        }),
+      });
+      const data = await res.json();
+
+      if (!res.ok || !data?.onboardingUrl) {
+        setStripeConnectError(
+          data?.error || 'Stripe Connect の連携URL発行に失敗しました。Stripe ダッシュボードで Connect が有効化されているかご確認ください。'
+        );
+        setIsConnectingStripe(false);
+        return;
+      }
+
+      window.open(data.onboardingUrl, '_blank', 'noopener,noreferrer');
       setIsConnectingStripe(false);
       setStripeConnected(true);
-    }, 1000);
+    } catch {
+      setStripeConnectError('通信エラーが発生しました。時間をおいて再度お試しください。');
+      setIsConnectingStripe(false);
+    }
   };
 
   // コンプライアンス3要件がすべて満たされているか
@@ -690,12 +715,18 @@ export default function CoachOnboardingDemo() {
                       <span>Stripe 自動本人確認・口座連携 承認済み</span>
                     </div>
                   ) : (
-                    <button
-                      type="button"
-                      onClick={handleStripeConnectMock}
-                      disabled={isConnectingStripe}
-                      className="w-full sm:w-auto min-h-11 py-2.5 px-4 sm:px-5 rounded-full bg-[#3E8E84] hover:bg-[#32756d] text-white font-bold text-xs flex items-center justify-center gap-2 transition-colors cursor-pointer disabled:opacity-50 text-center"
-                    >
+                    <div className="space-y-2.5">
+                      {stripeConnectError && (
+                        <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-[11px] font-bold">
+                          {stripeConnectError}
+                        </div>
+                      )}
+                      <button
+                        type="button"
+                        onClick={handleStripeConnect}
+                        disabled={isConnectingStripe}
+                        className="w-full sm:w-auto min-h-11 py-2.5 px-4 sm:px-5 rounded-full bg-[#3E8E84] hover:bg-[#32756d] text-white font-bold text-xs flex items-center justify-center gap-2 transition-colors cursor-pointer disabled:opacity-50 text-center"
+                      >
                       <ExternalLink className="w-4 h-4 shrink-0" strokeWidth={1.75} />
                       <span>
                         {isConnectingStripe
@@ -703,6 +734,7 @@ export default function CoachOnboardingDemo() {
                           : 'Stripe で本人確認・口座連携'}
                       </span>
                     </button>
+                    </div>
                   )}
                 </div>
               </div>

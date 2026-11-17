@@ -683,7 +683,7 @@ export default function HomePageClient() {
                   </span>
                   <span className="inline-flex items-center gap-1">
                     <Check className="w-3 h-3 text-[#3E8E84]" strokeWidth={2} />
-                    <span>単発1回から受講OK</span>
+                    <span>1回ごとの単発予約制</span>
                   </span>
                   <span className="inline-flex items-center gap-1">
                     <Check className="w-3 h-3 text-[#3E8E84]" strokeWidth={2} />
@@ -1143,7 +1143,7 @@ export default function HomePageClient() {
                         </span>
                       </div>
                       <h3 className="font-heading text-sm sm:text-base font-bold text-[#2C2B29] leading-snug">
-                        必要な時に1回から都度払いで受講OK
+                        必要な時に1回ごとの都度払いで受講
                       </h3>
                       <p className="text-xs text-[#5E5B54] leading-relaxed">
                         入会金や年会費の縛りは一切なし。空き枠カレンダーから日時を選び、クレジットカード事前決済でその場で予約が完了します。
@@ -1388,7 +1388,7 @@ export default function HomePageClient() {
                 <div className="bg-white rounded-3xl border border-[#EADBCC] shadow-xs overflow-hidden">
                   <div className="bg-[#FCE7A2]/45 px-5 sm:px-6 py-3 border-b border-[#EADBCC]/70 flex flex-wrap items-center justify-between gap-2">
                     <span className="text-xs font-bold text-[#2C2B29]">
-                      1回からOKの完全都度払い
+                      1回ごとの完全都度払い（単発予約制）
                     </span>
                     <span className="text-[10px] font-bold text-[#E3644F] bg-white px-2.5 py-0.5 rounded-full border border-[#E3644F]/25">
                       表示価格以外の請求なし
