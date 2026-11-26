@@ -14,6 +14,8 @@ import {
   RefreshCw,
   ExternalLink,
   Wallet,
+  ZoomIn,
+  X,
 } from 'lucide-react';
 
 type TabKey = 'parents' | 'bookings' | 'coaches' | 'demands';
@@ -102,6 +104,16 @@ export default function KcnAdminDashboardClient() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [updatingCoachId, setUpdatingCoachId] = useState<string | null>(null);
+  const [previewCoach, setPreviewCoach] = useState<KcnCoach | null>(null);
+
+  useEffect(() => {
+    if (!previewCoach) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setPreviewCoach(null);
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [previewCoach]);
 
   const [summary, setSummary] = useState<KcnSummary>({
     totalSales: 0,
@@ -459,29 +471,60 @@ export default function KcnAdminDashboardClient() {
                   className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs flex flex-col lg:flex-row lg:items-center justify-between gap-4"
                 >
                   <div className="flex flex-col sm:flex-row items-start gap-4">
-                    <div className="flex items-center gap-2 shrink-0">
-                      {c.avatar_url ? (
-                        <img
-                          src={c.avatar_url}
-                          alt="公開顔写真"
-                          className="w-16 h-16 rounded-xl object-cover border border-slate-200"
-                        />
-                      ) : (
-                        <div className="w-16 h-16 rounded-xl bg-slate-100 flex items-center justify-center text-[10px] text-slate-400">
-                          顔写真なし
-                        </div>
-                      )}
-                      {c.compliance_selfie_path ? (
-                        <img
-                          src={c.compliance_selfie_path}
-                          alt="本人確認撮影"
-                          className="w-16 h-16 rounded-xl object-cover border border-amber-300"
-                        />
-                      ) : (
-                        <div className="w-16 h-16 rounded-xl bg-slate-100 flex items-center justify-center text-[10px] text-slate-400">
-                          撮影なし
-                        </div>
-                      )}
+                    <div className="flex flex-wrap items-start gap-3 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => setPreviewCoach(c)}
+                        className="group relative text-left cursor-pointer"
+                        title="クリックで拡大表示"
+                      >
+                        <span className="block text-[10px] font-bold text-slate-500 mb-1">
+                          公開顔写真
+                        </span>
+                        {c.avatar_url ? (
+                          <div className="relative">
+                            <img
+                              src={c.avatar_url}
+                              alt="公開顔写真"
+                              className="w-28 h-28 sm:w-32 sm:h-32 rounded-2xl object-cover border border-slate-200 group-hover:border-[#3E8E84] transition-colors"
+                            />
+                            <span className="absolute bottom-1.5 right-1.5 w-6 h-6 rounded-full bg-slate-900/75 text-white flex items-center justify-center">
+                              <ZoomIn className="w-3.5 h-3.5" />
+                            </span>
+                          </div>
+                        ) : (
+                          <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-2xl bg-slate-100 flex items-center justify-center text-[11px] text-slate-400">
+                            顔写真なし
+                          </div>
+                        )}
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setPreviewCoach(c)}
+                        className="group relative text-left cursor-pointer"
+                        title="クリックで拡大表示"
+                      >
+                        <span className="block text-[10px] font-bold text-amber-700 mb-1">
+                          カメラ撮影（本人確認）
+                        </span>
+                        {c.compliance_selfie_path ? (
+                          <div className="relative">
+                            <img
+                              src={c.compliance_selfie_path}
+                              alt="本人確認撮影"
+                              className="w-28 h-28 sm:w-32 sm:h-32 rounded-2xl object-cover border-2 border-amber-300 group-hover:border-[#E3644F] transition-colors"
+                            />
+                            <span className="absolute bottom-1.5 right-1.5 w-6 h-6 rounded-full bg-slate-900/75 text-white flex items-center justify-center">
+                              <ZoomIn className="w-3.5 h-3.5" />
+                            </span>
+                          </div>
+                        ) : (
+                          <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-2xl bg-slate-100 flex items-center justify-center text-[11px] text-slate-400">
+                            撮影なし
+                          </div>
+                        )}
+                      </button>
                     </div>
 
                     <div className="space-y-1">
@@ -508,6 +551,14 @@ export default function KcnAdminDashboardClient() {
                   </div>
 
                   <div className="flex flex-wrap items-center gap-2 shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => setPreviewCoach(c)}
+                      className="h-9 px-3.5 rounded-full bg-white border border-slate-200 hover:border-slate-400 text-slate-700 text-xs font-bold inline-flex items-center gap-1.5 cursor-pointer"
+                    >
+                      <ZoomIn className="w-3.5 h-3.5" />
+                      <span>写真を拡大比較</span>
+                    </button>
                     <button
                       type="button"
                       disabled={isBusy || c.review_status === 'approved'}
@@ -566,6 +617,118 @@ export default function KcnAdminDashboardClient() {
               )}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {/* コーチ本人確認写真の拡大比較モーダル */}
+      {previewCoach && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          onClick={() => setPreviewCoach(null)}
+          className="fixed inset-0 z-50 bg-slate-900/75 backdrop-blur-xs flex items-center justify-center p-4"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white w-full max-w-4xl max-h-[calc(100dvh-2rem)] rounded-3xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col"
+          >
+            <div className="px-5 py-4 bg-slate-900 text-white flex items-center justify-between shrink-0">
+              <div>
+                <p className="text-[10px] font-bold text-amber-300 uppercase tracking-wider">
+                  IDENTITY REVIEW
+                </p>
+                <h3 className="text-sm sm:text-base font-bold">
+                  {previewCoach.display_name} コーチの本人確認写真比較
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setPreviewCoach(null)}
+                aria-label="閉じる"
+                className="p-2 rounded-full text-white/80 hover:text-white hover:bg-white/10 cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-5 sm:p-6 overflow-y-auto grid grid-cols-1 sm:grid-cols-2 gap-5">
+              <div className="space-y-2">
+                <div className="text-xs font-bold text-slate-700">
+                  1. 公開プロフィール用 顔写真
+                </div>
+                {previewCoach.avatar_url ? (
+                  <img
+                    src={previewCoach.avatar_url}
+                    alt="公開プロフィール顔写真（拡大）"
+                    className="w-full max-h-[55vh] object-contain rounded-2xl border border-slate-200 bg-slate-50"
+                  />
+                ) : (
+                  <div className="h-64 rounded-2xl bg-slate-100 flex items-center justify-center text-xs text-slate-400">
+                    画像なし
+                  </div>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <div className="text-xs font-bold text-amber-700">
+                  2. 登録時リアルタイム撮影（本人確認用）
+                </div>
+                {previewCoach.compliance_selfie_path ? (
+                  <img
+                    src={previewCoach.compliance_selfie_path}
+                    alt="登録時カメラ撮影（拡大）"
+                    className="w-full max-h-[55vh] object-contain rounded-2xl border-2 border-amber-300 bg-slate-50"
+                  />
+                ) : (
+                  <div className="h-64 rounded-2xl bg-slate-100 flex items-center justify-center text-xs text-slate-400">
+                    撮影画像なし
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="px-5 py-4 border-t border-slate-200 bg-slate-50 flex flex-wrap items-center justify-between gap-3 shrink-0">
+              <button
+                type="button"
+                onClick={() => setPreviewCoach(null)}
+                className="h-9 px-4 rounded-full bg-white border border-slate-200 hover:border-slate-400 text-xs font-bold text-slate-700 cursor-pointer"
+              >
+                閉じる
+              </button>
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  disabled={
+                    updatingCoachId === previewCoach.id ||
+                    previewCoach.review_status === 'approved'
+                  }
+                  onClick={async () => {
+                    await handleReviewAction(previewCoach.id, 'approve');
+                    setPreviewCoach(null);
+                  }}
+                  className="h-9 px-4 rounded-full bg-[#3E8E84] hover:bg-[#32756d] text-white text-xs font-bold inline-flex items-center gap-1.5 cursor-pointer disabled:opacity-45"
+                >
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  <span>承認（公開する）</span>
+                </button>
+                <button
+                  type="button"
+                  disabled={
+                    updatingCoachId === previewCoach.id ||
+                    previewCoach.review_status === 'rejected'
+                  }
+                  onClick={async () => {
+                    await handleReviewAction(previewCoach.id, 'reject');
+                    setPreviewCoach(null);
+                  }}
+                  className="h-9 px-4 rounded-full bg-white border border-rose-200 hover:bg-rose-50 text-rose-600 text-xs font-bold inline-flex items-center gap-1.5 cursor-pointer disabled:opacity-45"
+                >
+                  <XCircle className="w-3.5 h-3.5" />
+                  <span>却下</span>
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>
