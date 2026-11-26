@@ -54,6 +54,20 @@ export default function BookingModal({
     }
   }, []);
 
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   // テスト太郎（会員番号0035）自動入力ヘルパー
@@ -107,28 +121,39 @@ export default function BookingModal({
 
   return (
     <>
-      <div className="fixed inset-0 z-40 flex items-center justify-center p-4 bg-[#2C2B29]/60 backdrop-blur-xs overflow-y-auto">
-        <div className="bg-[#FDFBF7] w-full max-w-lg rounded-3xl shadow-2xl border border-[#EADBCC] overflow-hidden my-8">
-          {/* モーダルヘッダー */}
-          <div className="p-5 bg-[#2C2B29] text-white flex items-center justify-between">
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label="レッスン予約情報の入力"
+        onClick={onClose}
+        className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-[#2C2B29]/60 backdrop-blur-xs"
+      >
+        <div
+          onClick={(e) => e.stopPropagation()}
+          className="bg-[#FDFBF7] w-full max-w-lg max-h-[calc(100dvh-1.5rem)] sm:max-h-[calc(100dvh-2rem)] rounded-3xl shadow-2xl border border-[#EADBCC] overflow-hidden flex flex-col"
+        >
+          {/* モーダルヘッダー（常時上部固定） */}
+          <div className="p-4 sm:p-5 bg-[#2C2B29] text-white flex items-center justify-between shrink-0">
             <div>
               <span className="font-en text-[10px] tracking-widest uppercase text-[#F7D668] block">
                 LESSON REQUEST
               </span>
-              <h3 className="font-heading font-bold text-base tracking-tight">
+              <h3 className="font-heading font-bold text-sm sm:text-base tracking-tight">
                 レッスン予約情報の入力（{coach.name} コーチ）
               </h3>
             </div>
             <button
+              type="button"
               onClick={onClose}
-              className="text-white/80 hover:text-white p-1 rounded-lg transition-colors cursor-pointer"
+              aria-label="予約フォームを閉じる"
+              className="text-white/85 hover:text-white hover:bg-white/10 p-2 -mr-1 rounded-full transition-colors cursor-pointer shrink-0"
             >
-              <X className="w-5 h-5" strokeWidth={1.75} />
+              <X className="w-5 h-5" strokeWidth={2} />
             </button>
           </div>
 
-          {/* 選択日時＆料金確認バナー */}
-          <div className="bg-[#FCE7A2]/60 p-4 border-b border-[#EADBCC] flex flex-wrap items-center justify-between gap-3">
+          {/* 選択日時＆料金確認バナー（常時固定） */}
+          <div className="bg-[#FCE7A2]/60 p-3.5 sm:p-4 border-b border-[#EADBCC] flex flex-wrap items-center justify-between gap-2 sm:gap-3 shrink-0">
             <div className="space-y-0.5">
               <span className="text-[11px] font-bold text-[#5E5B54] uppercase tracking-wider">
                 選択した日時
@@ -166,8 +191,8 @@ export default function BookingModal({
             </div>
           )}
 
-          {/* 入力フォーム */}
-          <form onSubmit={handleSubmitToStripe} className="p-6 space-y-4">
+          {/* 入力フォーム（ここだけ縦スクロール） */}
+          <form onSubmit={handleSubmitToStripe} className="p-5 sm:p-6 space-y-4 overflow-y-auto flex-1">
             {/* 保護者氏名 */}
             <div>
               <label className="block text-xs font-bold text-[#2C2B29] mb-1">
@@ -335,13 +360,20 @@ export default function BookingModal({
                 )}
               </button>
 
-              <div className="text-center">
+              <div className="flex flex-col items-center gap-2 pt-1">
                 <Link
                   href={`/checkout/${slot.id}`}
                   className="text-xs text-[#3E8E84] hover:underline font-bold"
                 >
                   お支払い確認ページで詳しく確認して申し込む →
                 </Link>
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="text-xs text-[#5E5B54] hover:text-[#2C2B29] font-bold py-1.5 px-4 rounded-full hover:bg-[#EADBCC]/40 transition-colors cursor-pointer"
+                >
+                  キャンセルして空き枠選択へ戻る
+                </button>
               </div>
             </div>
           </form>
