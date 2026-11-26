@@ -10,7 +10,7 @@ import KidsCoachFooter from '@/components/kids-coach/Footer';
 import JsonLd from '@/components/kids-coach/JsonLd';
 import { ChevronRight, Shield } from 'lucide-react';
 
-const SITE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://kids-coach-navi.vercel.app';
+const SITE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://kids-coach-navi.com';
 
 interface CoachPageProps {
   params: Promise<{

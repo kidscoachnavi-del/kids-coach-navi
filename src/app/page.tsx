@@ -3,7 +3,7 @@ import { Metadata } from 'next';
 import HomePageClient from '@/components/kids-coach/HomePageClient';
 import JsonLd from '@/components/kids-coach/JsonLd';
 
-const SITE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://kids-coach-navi.vercel.app';
+const SITE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://kids-coach-navi.com';
 
 export const metadata: Metadata = {
   title: 'キッズコーチナビ by SWIM PARTNERS ｜ 子どもの本当の「できた！」に出会う',

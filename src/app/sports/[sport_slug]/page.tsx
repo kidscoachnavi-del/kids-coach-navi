@@ -33,7 +33,7 @@ export async function generateMetadata({
     };
   }
 
-  const siteUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://kids-coach-navi.vercel.app';
+  const siteUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://kids-coach-navi.com';
   const title = `子ども向け${category.name}の出張マンツーマン指導 | キッズコーチナビ by SWIM PARTNERS`;
   const description = `${category.name}のマンツーマン指導・出張個人レッスン。${category.shortDesc}。入会金・月会費なしの都度払いで、ご希望の公園や利用可能な施設でプロコーチが丁寧に指導。運営：SWIM PARTNERS。`;
 
@@ -77,7 +77,7 @@ export default async function SportCategoryPage({ params }: SportPageProps) {
     provider: {
       '@type': 'Organization',
       name: 'SWIM PARTNERS',
-      url: 'https://kids-coach-navi.vercel.app',
+      url: 'https://kids-coach-navi.com',
     },
     description: category.longDesc,
     offers: {

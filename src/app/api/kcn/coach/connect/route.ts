@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
     const appUrl =
       process.env.NEXT_PUBLIC_APP_URL ||
       req.nextUrl.origin ||
-      'https://kids-coach-navi.vercel.app';
+      'https://kids-coach-navi.com';
 
     const { data: profile } = await supabase
       .from('kcn_coach_profiles')

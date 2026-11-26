@@ -62,7 +62,7 @@ export async function POST(req: NextRequest) {
     const appUrl =
       process.env.NEXT_PUBLIC_APP_URL ||
       req.nextUrl.origin ||
-      'https://kids-coach-navi.vercel.app';
+      'https://kids-coach-navi.com';
 
     // スロット解決（UUIDなら直接参照、モックID時は未予約スロットを1件取得して検証）
     let resolvedSlot: { id: string; service_id: string; coach_id: string; is_booked: boolean } | null = null;

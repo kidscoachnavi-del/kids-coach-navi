@@ -10,7 +10,7 @@ const CORE_AREA_SLUGS = ['setagaya', 'meguro', 'minato', 'shibuya', 'shinagawa']
  */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl =
-    process.env.NEXT_PUBLIC_APP_URL || 'https://kids-coach-navi.vercel.app';
+    process.env.NEXT_PUBLIC_APP_URL || 'https://kids-coach-navi.com';
 
   // 1. 静的・主要ページ
   const staticRoutes: MetadataRoute.Sitemap = [

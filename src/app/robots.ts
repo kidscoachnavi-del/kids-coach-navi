@@ -6,7 +6,7 @@ import { MetadataRoute } from 'next';
  */
 export default function robots(): MetadataRoute.Robots {
   const baseUrl =
-    process.env.NEXT_PUBLIC_APP_URL || 'https://kids-coach-navi.vercel.app';
+    process.env.NEXT_PUBLIC_APP_URL || 'https://kids-coach-navi.com';
 
   return {
     rules: [

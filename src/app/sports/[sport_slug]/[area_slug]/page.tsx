@@ -71,8 +71,8 @@ export default async function SportAreaPage({ params }: SportAreaPageProps) {
     '@type': 'LocalBusiness',
     name: `キッズコーチナビ ${area.name} ${category.name}出張指導`,
     image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=600&q=80',
-    '@id': `https://kids-coach-navi.vercel.app/sports/${sport_slug}/${area_slug}`,
-    url: `https://kids-coach-navi.vercel.app/sports/${sport_slug}/${area_slug}`,
+    '@id': `https://kids-coach-navi.com/sports/${sport_slug}/${area_slug}`,
+    url: `https://kids-coach-navi.com/sports/${sport_slug}/${area_slug}`,
     telephone: '03-0000-0035',
     priceRange: '¥5,000〜',
     address: {
@@ -89,7 +89,7 @@ export default async function SportAreaPage({ params }: SportAreaPageProps) {
     parentOrganization: {
       '@type': 'Organization',
       name: 'SWIM PARTNERS',
-      url: 'https://kids-coach-navi.vercel.app',
+      url: 'https://kids-coach-navi.com',
     },
     makesOffer: {
       '@type': 'Offer',
