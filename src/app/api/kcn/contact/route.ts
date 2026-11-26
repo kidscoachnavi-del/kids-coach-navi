@@ -98,12 +98,46 @@ export async function POST(req: NextRequest) {
       });
     }
 
+    // Google スプレッドシート（GAS Webhook）が設定されていれば自動追記
+    let sheetRecorded = false;
+    const gasWebhookUrl = process.env.CONTACT_GAS_WEBHOOK_URL;
+    if (gasWebhookUrl) {
+      const receivedAtJst = new Intl.DateTimeFormat('ja-JP', {
+        timeZone: 'Asia/Tokyo',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+      }).format(new Date(receivedAt));
+
+      try {
+        const gasRes = await fetch(gasWebhookUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            inquiryId,
+            receivedAt: receivedAtJst,
+            category,
+            name,
+            email,
+            message,
+          }),
+        });
+        sheetRecorded = gasRes.ok;
+      } catch (err) {
+        console.error('[KCN Contact Inquiry] スプレッドシート記録エラー:', err);
+      }
+    }
+
     return NextResponse.json({
       ok: true,
       inquiryId,
       receivedAt,
       recipient: CONTACT_RECIPIENT,
       emailSent,
+      sheetRecorded,
     });
   } catch (error) {
     console.error('[KCN Contact Inquiry] Error:', error);
