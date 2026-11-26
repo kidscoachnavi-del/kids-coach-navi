@@ -5,11 +5,10 @@ import { login } from './actions'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { AlertCircle, Loader2, Eye, EyeOff, Waves } from 'lucide-react'
+import { AlertCircle, Loader2, Eye, EyeOff } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import Image from 'next/image'
 import { Checkbox } from '@/components/ui/checkbox'
 
 const initialState = {
@@ -24,31 +23,35 @@ function LoginForm() {
     const redirectTo = searchParams.get('redirectTo') || ''
 
     useEffect(() => {
-        router.prefetch('/admin')
-        router.prefetch('/coach')
+        router.prefetch('/admin/kcn')
+        router.prefetch('/coach/dashboard')
     }, [router])
 
     return (
-        <div className="relative min-h-screen flex items-center justify-center p-4 overflow-hidden bg-slate-50 font-sans">
-            {/* Background Orbs */}
-            <div className="absolute top-[-20%] right-[-10%] w-[800px] h-[800px] bg-primary/10 rounded-full blur-[120px] animate-pulse" style={{ animationDuration: '8s' }} />
-            <div className="absolute bottom-[-20%] left-[10%] w-[600px] h-[600px] bg-blue-400/10 rounded-full blur-[100px] animate-pulse" style={{ animationDuration: '12s' }} />
-
+        <div className="relative min-h-screen flex items-center justify-center p-4 overflow-hidden bg-[#FDFBF7] font-sans text-[#2C2B29]">
             {/* Login Card */}
-            <div className="glass-card w-full max-w-md p-8 relative z-10 animate-fade-in-up border-white/60 shadow-xl">
+            <div className="bg-white w-full max-w-md p-7 sm:p-8 rounded-3xl border border-[#EADBCC] shadow-sm relative z-10">
 
-                <div className="text-center mb-8 space-y-2">
-                    <div className="flex items-center justify-center mb-6">
-                        <div className="relative w-64 h-16">
-                            <Image
-                                src="/logo.png"
-                                alt="Swim Partners"
-                                fill
-                                className="object-contain"
-                                priority
-                            />
+                <div className="text-center mb-7 space-y-2">
+                    <Link href="/" className="inline-flex items-center justify-center gap-3 group">
+                        <div className="relative w-7 h-9 shrink-0">
+                            <div className="absolute inset-0 bg-[#F7D668] rounded-md rotate-12 group-hover:rotate-6 transition-transform" />
+                            <div className="absolute top-1.5 left-1 w-2 h-2 bg-[#3E8E84] rounded-full" />
+                            <div className="absolute top-1.5 right-1 w-2 h-2 bg-[#E3644F] rotate-45" />
+                            <div className="absolute bottom-1.5 left-2.5 w-2 h-2 bg-[#88C8D8] rounded-xs" />
                         </div>
-                    </div>
+                        <div className="text-left">
+                            <span className="font-logo font-bold text-xl tracking-tight text-[#2C2B29] block leading-none">
+                                Kids Coach Navi
+                            </span>
+                            <span className="text-[11px] text-[#5E5B54] font-bold tracking-wider block mt-0.5">
+                                キッズコーチナビ by SWIM PARTNERS
+                            </span>
+                        </div>
+                    </Link>
+                    <h1 className="font-heading text-base font-bold text-[#2C2B29] pt-2">
+                        管理者・コーチ ログイン
+                    </h1>
                 </div>
 
                 <form action={formAction} className="space-y-6">

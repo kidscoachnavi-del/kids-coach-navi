@@ -40,22 +40,28 @@ export async function login(prevState: any, formData: FormData) {
         return redirect('/login')
     }
 
-    const { data: profile } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', user.id)
-        .single()
+    const [{ data: kcnUser }, { data: profile }] = await Promise.all([
+        supabase
+            .from('kcn_users')
+            .select('role')
+            .eq('id', user.id)
+            .maybeSingle(),
+        supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', user.id)
+            .maybeSingle(),
+    ])
 
-    const role = profile?.role || 'coach'
+    const role = kcnUser?.role || profile?.role || 'coach'
 
     // Clear cache specifically for dashboard layouts to ensure fresh profile data
-    revalidatePath('/admin', 'layout')
-    revalidatePath('/coach', 'layout')
-    revalidatePath('/member', 'layout')
+    revalidatePath('/admin/kcn', 'page')
+    revalidatePath('/coach/dashboard', 'page')
 
     let targetUrl = redirectTo
     if (!targetUrl || !targetUrl.startsWith('/')) {
-        targetUrl = role === 'admin' ? '/admin' : '/coach'
+        targetUrl = role === 'admin' ? '/admin/kcn' : '/coach/dashboard'
     }
 
     redirect(targetUrl)

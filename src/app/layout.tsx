@@ -3,8 +3,8 @@ import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Swim Partners Manager",
-  description: "Swim Partners 業務管理システム",
+  title: "キッズコーチナビ ｜ Kids Coach Navi by SWIM PARTNERS",
+  description: "子ども向け出張マンツーマンスポーツ指導プラットフォーム「キッズコーチナビ」",
   manifest: "/manifest.json",
 };
 

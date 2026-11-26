@@ -1,9 +1,17 @@
+import type { Metadata } from 'next';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { redirect } from 'next/navigation';
+import KidsCoachNavbar from '@/components/kids-coach/Navbar';
+import KidsCoachFooter from '@/components/kids-coach/Footer';
 import KcnAdminDashboardClient from '@/components/admin/KcnAdminDashboardClient';
 
 export const dynamic = 'force-dynamic';
+
+export const metadata: Metadata = {
+  title: '運営・コーチ審査ダッシュボード | キッズコーチナビ',
+  robots: { index: false, follow: false },
+};
 
 export default async function KcnAdminPage() {
   const supabase = await createClient();
@@ -26,5 +34,15 @@ export default async function KcnAdminPage() {
     redirect('/');
   }
 
-  return <KcnAdminDashboardClient />;
+  return (
+    <div className="min-h-screen bg-[#FDFBF7] text-[#2C2B29] flex flex-col font-sans">
+      <KidsCoachNavbar />
+      <main className="flex-1 py-6 sm:py-10">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+          <KcnAdminDashboardClient />
+        </div>
+      </main>
+      <KidsCoachFooter />
+    </div>
+  );
 }
