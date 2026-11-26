@@ -191,7 +191,7 @@ export async function POST(req: NextRequest) {
       const origin =
         process.env.NEXT_PUBLIC_APP_URL ||
         req.nextUrl.origin ||
-        'https://kids-coach-navi.vercel.app';
+        'https://kids-coach-navi.com';
       await fetch(gchatWebhookUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
