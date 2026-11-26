@@ -95,6 +95,16 @@ function sortRoomBookings(list: Booking[]): Booking[] {
 export default function ChatListPage() {
   // 体験用ロール切替（生徒・保護者 / コーチ）
   const [activeRole, setActiveRole] = useState<'parent' | 'coach'>('parent');
+  const [showDemoTools, setShowDemoTools] = useState(
+    process.env.NODE_ENV !== 'production'
+  );
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('demo') === '1') setShowDemoTools(true);
+    }
+  }, []);
 
   // 検索・フィルタ状態
   const [searchQuery, setSearchQuery] = useState('');
@@ -1062,14 +1072,16 @@ export default function ChatListPage() {
                               : '生徒・保護者（テスト太郎）がチャットを削除したため、新規メッセージは送信できません。'}
                           </span>
                         </div>
-                        <button
-                          type="button"
-                          onClick={handleRestoreChat}
-                          className="px-3 py-1 rounded-full bg-white border border-[#EADBCC] text-[11px] font-bold text-[#3E8E84] inline-flex items-center gap-1 shrink-0 cursor-pointer"
-                        >
-                          <RotateCcw className="w-3 h-3" strokeWidth={1.75} />
-                          <span>デモ用：チャットを復元</span>
-                        </button>
+                        {showDemoTools && (
+                          <button
+                            type="button"
+                            onClick={handleRestoreChat}
+                            className="px-3 py-1 rounded-full bg-white border border-[#EADBCC] text-[11px] font-bold text-[#3E8E84] inline-flex items-center gap-1 shrink-0 cursor-pointer"
+                          >
+                            <RotateCcw className="w-3 h-3" strokeWidth={1.75} />
+                            <span>デモ用：チャットを復元</span>
+                          </button>
+                        )}
                       </div>
                     )}
 

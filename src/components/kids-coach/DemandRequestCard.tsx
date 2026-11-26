@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { saveDemandRequest } from '@/lib/demand-requests';
 import { Send, CheckCircle2, Sparkles } from 'lucide-react';
 
@@ -30,6 +30,17 @@ export default function DemandRequestCard({
   const [note, setNote] = useState('');
   const [contactEmail, setContactEmail] = useState('');
   const [submitted, setSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showDemoTools, setShowDemoTools] = useState(
+    process.env.NODE_ENV !== 'production'
+  );
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('demo') === '1') setShowDemoTools(true);
+    }
+  }, []);
 
   const handleApplyTestTaro = () => {
     setContactEmail('test_taro@wellne.example.com');
@@ -38,15 +49,30 @@ export default function DemandRequestCard({
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!sportName.trim() || !areaName.trim()) return;
-    saveDemandRequest({
+    if (!sportName.trim() || !areaName.trim() || isSubmitting) return;
+    setIsSubmitting(true);
+
+    const payload = {
       sportName: sportName.trim(),
       areaName: areaName.trim(),
       note: note.trim() || undefined,
       contactEmail: contactEmail.trim() || undefined,
-    });
+    };
+
+    try {
+      await fetch('/api/kcn/demand', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+    } catch {
+      // ネットワークエラー時もローカル保持にフォールバック
+    }
+
+    saveDemandRequest(payload);
+    setIsSubmitting(false);
     setSubmitted(true);
   };
 
@@ -66,7 +92,7 @@ export default function DemandRequestCard({
           </p>
         </div>
 
-        {!submitted && (
+        {!submitted && showDemoTools && (
           <button
             type="button"
             onClick={handleApplyTestTaro}

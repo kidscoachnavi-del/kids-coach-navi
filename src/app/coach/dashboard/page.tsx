@@ -39,6 +39,16 @@ import {
 
 export default function CoachDashboardPage() {
   const [profile, setProfile] = useState(INITIAL_COACH_PROFILE);
+  const [showDemoTools, setShowDemoTools] = useState(
+    process.env.NODE_ENV !== 'production'
+  );
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('demo') === '1') setShowDemoTools(true);
+    }
+  }, []);
   const [services, setServices] = useState<Service[]>(INITIAL_SERVICES);
   const [slots, setSlots] = useState<ServiceSlot[]>(INITIAL_SLOTS);
   const [bookings, setBookings] = useState<Booking[]>(INITIAL_BOOKINGS);
@@ -499,7 +509,7 @@ export default function CoachDashboardPage() {
                           )
                         )}
 
-                        {booking.status === 'completion_reported' && (
+                        {booking.status === 'completion_reported' && showDemoTools && (
                           <button
                             type="button"
                             onClick={() => handleApproveByParent(booking.id)}

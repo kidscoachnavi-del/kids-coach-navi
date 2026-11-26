@@ -43,10 +43,61 @@ export default function CheckoutPage() {
   const params = useParams();
   const slotId = params?.slotId as string;
 
-  // 対象スロットおよびサービスの取得（モック）
-  const slot = INITIAL_SLOTS.find((s) => s.id === slotId) || INITIAL_SLOTS[0];
-  const service = slot?.service || INITIAL_SERVICES[0];
-  const coach = service.coach || INITIAL_COACH_PROFILE;
+  // 対象スロットおよびサービスの取得（実DB優先・モックフォールバック）
+  const fallbackSlot = INITIAL_SLOTS.find((s) => s.id === slotId) || INITIAL_SLOTS[0];
+  const fallbackService = fallbackSlot?.service || INITIAL_SERVICES[0];
+  const fallbackCoach = fallbackService.coach || INITIAL_COACH_PROFILE;
+
+  const [liveSlotData, setLiveSlotData] = useState<{
+    id: string;
+    start_time: string;
+    end_time: string;
+    service?: {
+      id: string;
+      title: string;
+      price: number;
+      duration_minutes: number;
+      target_areas?: string[];
+    };
+    coach?: {
+      id: string;
+      display_name: string;
+      title: string;
+      avatar_url: string;
+    };
+  } | null>(null);
+
+  const slot = liveSlotData
+    ? {
+        ...fallbackSlot,
+        id: liveSlotData.id,
+        start_time: liveSlotData.start_time,
+        end_time: liveSlotData.end_time,
+      }
+    : fallbackSlot;
+  const service = liveSlotData?.service
+    ? {
+        ...fallbackService,
+        id: liveSlotData.service.id,
+        title: liveSlotData.service.title,
+        price: liveSlotData.service.price,
+        duration_minutes: liveSlotData.service.duration_minutes,
+        target_areas: liveSlotData.service.target_areas || fallbackService.target_areas,
+      }
+    : fallbackService;
+  const coach = liveSlotData?.coach
+    ? {
+        ...fallbackCoach,
+        id: liveSlotData.coach.id,
+        display_name: liveSlotData.coach.display_name,
+        title: liveSlotData.coach.title,
+        avatar_url: liveSlotData.coach.avatar_url || fallbackCoach.avatar_url,
+      }
+    : fallbackCoach;
+
+  const [showDemoTools, setShowDemoTools] = useState(
+    process.env.NODE_ENV !== 'production'
+  );
 
   // 料金計算: Wellne 25% / コーチ 75%
   const totalAmount = service.price;
@@ -72,8 +123,24 @@ export default function CheckoutPage() {
   const [paymentError, setPaymentError] = useState<string | null>(null);
   const [createdBookingId, setCreatedBookingId] = useState('bk-demo-001');
 
-  // 初回マウント時にStripe連携済み顧客プロフィールを読み込む（カード情報は一切保持しない）
+  // 初回マウント時に実DBスロット＆Stripe連携済み顧客プロフィールを読み込む（カード情報は一切保持しない）
   useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('demo') === '1') setShowDemoTools(true);
+    }
+
+    if (slotId && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slotId)) {
+      fetch(`/api/kcn/slots/${slotId}`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (data?.slot) setLiveSlotData(data.slot);
+        })
+        .catch(() => {
+          // 取得失敗時はフォールバックのまま表示
+        });
+    }
+
     try {
       const raw = localStorage.getItem(SAVED_CHECKOUT_KEY);
       if (raw) {
@@ -413,30 +480,44 @@ export default function CheckoutPage() {
                   </div>
                 ) : (
                   <>
-                    {/* テスト支援プリセットボタン */}
-                    <div className="p-3.5 bg-[#FDFBF7] rounded-2xl border border-[#EADBCC] flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
-                      <div className="text-xs font-bold text-[#2C2B29] whitespace-nowrap">
-                        テスト検証用顧客データ
-                      </div>
-                      <div className="flex flex-wrap items-center gap-2">
-                        {savedProfile && (
-                          <button
-                            type="button"
-                            onClick={() => setUseOneClickMode(true)}
-                            className="text-[11px] font-bold px-3 py-1.5 rounded-full bg-white border border-[#3E8E84] text-[#3E8E84] hover:bg-[#D2E7DF]/30 transition-colors cursor-pointer whitespace-nowrap"
-                          >
-                            ワンクリック決済に戻る
-                          </button>
-                        )}
+                    {savedProfile && !showDemoTools && (
+                      <div className="flex justify-end">
                         <button
                           type="button"
-                          onClick={handleSetTestTaro}
-                          className="text-[11px] font-bold px-3.5 py-2 sm:py-1.5 rounded-full bg-[#3E8E84] hover:bg-[#32756d] text-white transition-colors cursor-pointer whitespace-nowrap"
+                          onClick={() => setUseOneClickMode(true)}
+                          className="text-[11px] font-bold px-3 py-1.5 rounded-full bg-white border border-[#3E8E84] text-[#3E8E84] hover:bg-[#D2E7DF]/30 transition-colors cursor-pointer whitespace-nowrap"
                         >
-                          会員番号0035（テスト太郎）適用
+                          ワンクリック決済に戻る
                         </button>
                       </div>
-                    </div>
+                    )}
+
+                    {/* テスト支援プリセットボタン（開発環境・?demo=1時のみ表示） */}
+                    {showDemoTools && (
+                      <div className="p-3.5 bg-[#FDFBF7] rounded-2xl border border-[#EADBCC] flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                        <div className="text-xs font-bold text-[#2C2B29] whitespace-nowrap">
+                          テスト検証用顧客データ
+                        </div>
+                        <div className="flex flex-wrap items-center gap-2">
+                          {savedProfile && (
+                            <button
+                              type="button"
+                              onClick={() => setUseOneClickMode(true)}
+                              className="text-[11px] font-bold px-3 py-1.5 rounded-full bg-white border border-[#3E8E84] text-[#3E8E84] hover:bg-[#D2E7DF]/30 transition-colors cursor-pointer whitespace-nowrap"
+                            >
+                              ワンクリック決済に戻る
+                            </button>
+                          )}
+                          <button
+                            type="button"
+                            onClick={handleSetTestTaro}
+                            className="text-[11px] font-bold px-3.5 py-2 sm:py-1.5 rounded-full bg-[#3E8E84] hover:bg-[#32756d] text-white transition-colors cursor-pointer whitespace-nowrap"
+                          >
+                            会員番号0035（テスト太郎）適用
+                          </button>
+                        </div>
+                      </div>
+                    )}
 
                     <form onSubmit={handlePay} className="space-y-4 text-xs">
                   {/* 保護者情報 */}
