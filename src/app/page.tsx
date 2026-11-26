@@ -2,6 +2,9 @@ import React from 'react';
 import { Metadata } from 'next';
 import HomePageClient from '@/components/kids-coach/HomePageClient';
 import JsonLd from '@/components/kids-coach/JsonLd';
+import { fetchApprovedCoachesWithSlots } from '@/lib/kcn-coaches';
+
+export const dynamic = 'force-dynamic';
 
 const SITE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://kids-coach-navi.com';
 
@@ -37,7 +40,8 @@ export const metadata: Metadata = {
   },
 };
 
-export default function HomePage() {
+export default async function HomePage() {
+  const { coaches, slots } = await fetchApprovedCoachesWithSlots();
   // AIO・Google検索向けの構造化データ（Organization / Service / FAQPage）
   const homeJsonLd = [
     {
@@ -125,7 +129,7 @@ export default function HomePage() {
   return (
     <>
       <JsonLd data={homeJsonLd} />
-      <HomePageClient />
+      <HomePageClient realCoaches={coaches} realSlots={slots} />
     </>
   );
 }

@@ -11,7 +11,6 @@ import { fetchApprovedCoachesWithSlots } from '@/lib/kcn-coaches';
 import {
   SPORT_CATEGORIES,
   AREA_LIST,
-  MOCK_COACHES,
   SPORT_VISUALS,
 } from '@/data/kids-coach-mock';
 import { ChevronRight, MapPin, Check } from 'lucide-react';
@@ -51,8 +50,8 @@ export default async function SportAreaPage({ params }: SportAreaPageProps) {
     notFound();
   }
 
-  // 該当種目 ＆ 該当エリアのコーチを抽出（承認済みDB優先・該当がなければ該当種目コーチを表示）
-  const { coaches: allCoaches } = await fetchApprovedCoachesWithSlots();
+  // 該当種目 ＆ 該当エリアのコーチを抽出（承認済みDB実データのみ）
+  const { coaches: allCoaches, slots: allSlots } = await fetchApprovedCoachesWithSlots();
   let coaches = allCoaches.filter(
     (c) =>
       (c.sportsSlugs.includes(sport_slug) || c.sports.some((s) => s.includes(category.name.slice(0, 2)))) &&
@@ -247,15 +246,29 @@ export default async function SportAreaPage({ params }: SportAreaPageProps) {
               </Link>
             </div>
 
-            {coaches.length === 1 ? (
-              <div className="space-y-6">
-                <CoachCard coach={coaches[0]} wide />
-              </div>
+            {coaches.length > 0 ? (
+              coaches.length === 1 ? (
+                <div className="space-y-6">
+                  <CoachCard
+                    coach={coaches[0]}
+                    slots={allSlots.filter((s) => s.coachId === coaches[0].id)}
+                    wide
+                  />
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {coaches.map((coach) => (
+                    <CoachCard
+                      key={coach.id}
+                      coach={coach}
+                      slots={allSlots.filter((s) => s.coachId === coach.id)}
+                    />
+                  ))}
+                </div>
+              )
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {coaches.map((coach) => (
-                  <CoachCard key={coach.id} coach={coach} />
-                ))}
+              <div className="p-8 text-center text-[#5E5B54] bg-white rounded-3xl border border-[#EADBCC] text-xs">
+                現在このエリアの空き枠を順次拡大中です。下記フォームよりご希望をお寄せください。
               </div>
             )}
           </div>

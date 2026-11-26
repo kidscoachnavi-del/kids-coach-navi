@@ -11,7 +11,6 @@ import { fetchApprovedCoachesWithSlots } from '@/lib/kcn-coaches';
 import {
   SPORT_CATEGORIES,
   AREA_LIST,
-  MOCK_COACHES,
   SPORT_VISUALS,
 } from '@/data/kids-coach-mock';
 import { ChevronRight, MapPin, Check, ArrowRight } from 'lucide-react';
@@ -62,8 +61,8 @@ export default async function SportCategoryPage({ params }: SportPageProps) {
     notFound();
   }
 
-  // 該当種目のコーチを抽出（承認済みDB優先・モックフォールバック）
-  const { coaches: allCoaches } = await fetchApprovedCoachesWithSlots();
+  // 該当種目のコーチを抽出（承認済みDB実データのみ）
+  const { coaches: allCoaches, slots: allSlots } = await fetchApprovedCoachesWithSlots();
   const coaches = allCoaches.filter(
     (c) =>
       c.sportsSlugs.includes(sport_slug) ||
@@ -226,12 +225,20 @@ export default async function SportCategoryPage({ params }: SportPageProps) {
             {coaches.length > 0 ? (
               coaches.length === 1 ? (
                 <div className="space-y-6">
-                  <CoachCard coach={coaches[0]} wide />
+                  <CoachCard
+                    coach={coaches[0]}
+                    slots={allSlots.filter((s) => s.coachId === coaches[0].id)}
+                    wide
+                  />
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {coaches.map((coach) => (
-                    <CoachCard key={coach.id} coach={coach} />
+                    <CoachCard
+                      key={coach.id}
+                      coach={coach}
+                      slots={allSlots.filter((s) => s.coachId === coach.id)}
+                    />
                   ))}
                 </div>
               )

@@ -3,10 +3,12 @@
 import React from 'react';
 import Link from 'next/link';
 import { MapPin, ChevronRight, ShieldCheck, Calendar } from 'lucide-react';
-import { Coach, generateMockSlots } from '@/data/kids-coach-mock';
+import { Coach, AvailableSlot } from '@/data/kids-coach-mock';
 
 interface CoachCardProps {
   coach: Coach;
+  /** DBから取得した実空き枠 */
+  slots?: AvailableSlot[];
   /** 1名のみの表示時など、横長2カラムレイアウトにする場合に指定 */
   wide?: boolean;
 }
@@ -18,8 +20,8 @@ function formatShortDate(dateStr: string): string {
   return `${Number(parts[1])}/${Number(parts[2])}`;
 }
 
-export default function CoachCard({ coach, wide = false }: CoachCardProps) {
-  const upcomingSlots = generateMockSlots(coach.id)
+export default function CoachCard({ coach, slots = [], wide = false }: CoachCardProps) {
+  const upcomingSlots = slots
     .filter((slot) => slot.status === 'available')
     .slice(0, 3);
 

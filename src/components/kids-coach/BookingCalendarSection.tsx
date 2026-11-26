@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { Coach, AvailableSlot, generateMockSlots } from '@/data/kids-coach-mock';
+import { Coach, AvailableSlot, getTodayJstYmd } from '@/data/kids-coach-mock';
 import {
   Clock,
   ChevronLeft,
@@ -61,11 +61,11 @@ export default function BookingCalendarSection({
   coach,
   initialSlots,
 }: BookingCalendarSectionProps) {
-  // DBから実スロットが渡された場合は優先使用し、未取得時は60日分のスロットを生成
-  const allSlots = useMemo(
-    () => (initialSlots && initialSlots.length > 0 ? initialSlots : generateMockSlots(coach.id, 60)),
-    [coach.id, initialSlots]
-  );
+  // DBから取得した今日以降の実スロットのみを使用（モック生成は行わない）
+  const allSlots = useMemo(() => {
+    const todayYmd = getTodayJstYmd();
+    return (initialSlots || []).filter((s) => s.date >= todayYmd);
+  }, [initialSlots]);
 
   // 日付ごとのサマリー情報をマップ化
   const dateSummaryMap = useMemo(() => {

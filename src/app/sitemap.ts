@@ -1,6 +1,7 @@
 import { MetadataRoute } from 'next';
 import { AREA_SEO_AUDIT_DATA } from '@/lib/area-seo-audit';
-import { SPORT_CATEGORIES, AREA_LIST, MOCK_COACHES } from '@/data/kids-coach-mock';
+import { SPORT_CATEGORIES, AREA_LIST } from '@/data/kids-coach-mock';
+import { fetchApprovedCoachesWithSlots } from '@/lib/kcn-coaches';
 
 const CORE_AREA_SLUGS = ['setagaya', 'meguro', 'minato', 'shibuya', 'shinagawa'];
 
@@ -78,8 +79,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }))
   );
 
-  // 4. キッズコーチナビ コーチ詳細ページ (/coaches/[id])
-  const coachRoutes: MetadataRoute.Sitemap = MOCK_COACHES.map((coach) => ({
+  // 4. キッズコーチナビ コーチ詳細ページ (/coaches/[id])（DBの承認済み実コーチのみ）
+  const { coaches: approvedCoaches } = await fetchApprovedCoachesWithSlots();
+  const coachRoutes: MetadataRoute.Sitemap = approvedCoaches.map((coach) => ({
     url: `${baseUrl}/coaches/${coach.id}`,
     lastModified: new Date(),
     changeFrequency: 'weekly',

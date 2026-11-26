@@ -13,13 +13,12 @@ async function assertAdmin() {
   }
 
   const adminClient = createAdminClient();
-  const { data: profile } = await adminClient
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .maybeSingle();
+  const [{ data: kcnUser }, { data: profile }] = await Promise.all([
+    adminClient.from('kcn_users').select('role').eq('id', user.id).maybeSingle(),
+    adminClient.from('profiles').select('role').eq('id', user.id).maybeSingle(),
+  ]);
 
-  if (!profile || profile.role !== 'admin') {
+  if (kcnUser?.role !== 'admin' && profile?.role !== 'admin') {
     return { ok: false as const, status: 403, userId: user.id };
   }
 

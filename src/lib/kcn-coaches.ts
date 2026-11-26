@@ -2,8 +2,6 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import {
   Coach,
   AvailableSlot,
-  MOCK_COACHES,
-  generateMockSlots,
   SPORT_CATEGORIES,
   AREA_LIST,
 } from '@/data/kids-coach-mock';
@@ -56,7 +54,7 @@ function toAvailableSlot(row: {
 }
 
 /**
- * 承認済みコーチ一覧と空き枠を取得（Supabase優先・未構築時はモックフォールバック）
+ * 承認済みコーチ一覧と空き枠を取得（Supabase実データのみ）
  */
 export async function fetchApprovedCoachesWithSlots(): Promise<{
   coaches: Coach[];
@@ -67,7 +65,7 @@ export async function fetchApprovedCoachesWithSlots(): Promise<{
     !process.env.NEXT_PUBLIC_SUPABASE_URL ||
     !process.env.SUPABASE_SERVICE_ROLE_KEY
   ) {
-    return { coaches: MOCK_COACHES, slots: [], fromDatabase: false };
+    return { coaches: [], slots: [], fromDatabase: false };
   }
 
   try {
@@ -92,7 +90,7 @@ export async function fetchApprovedCoachesWithSlots(): Promise<{
       ]);
 
     if (!dbCoaches || dbCoaches.length === 0) {
-      return { coaches: MOCK_COACHES, slots: [], fromDatabase: false };
+      return { coaches: [], slots: [], fromDatabase: true };
     }
 
     const coaches: Coach[] = dbCoaches.map((c) => {
@@ -137,22 +135,26 @@ export async function fetchApprovedCoachesWithSlots(): Promise<{
     return { coaches, slots, fromDatabase: true };
   } catch (err) {
     console.error('fetchApprovedCoachesWithSlots error:', err);
-    return { coaches: MOCK_COACHES, slots: [], fromDatabase: false };
+    return { coaches: [], slots: [], fromDatabase: false };
   }
 }
 
 /**
- * コーチ単体と空き枠を取得（UUIDならSupabase参照、モックID時はモック参照）
+ * コーチ単体と空き枠を取得（Supabase実データのみ）
  */
 export async function fetchCoachByIdWithSlots(id: string): Promise<{
   coach: Coach | undefined;
   slots: AvailableSlot[];
 }> {
   const { coaches, slots } = await fetchApprovedCoachesWithSlots();
-  const found = coaches.find((c) => c.id === id) || MOCK_COACHES.find((c) => c.id === id);
-  const dbCoachSlots = slots.filter((s) => s.coachId === id);
-  const coachSlots =
-    dbCoachSlots.length > 0 ? dbCoachSlots : generateMockSlots(id, 60);
+  const found = coaches.find((c) => c.id === id);
+  const todayYmd = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Tokyo',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(new Date());
+  const dbCoachSlots = slots.filter((s) => s.coachId === id && s.date >= todayYmd);
 
-  return { coach: found, slots: coachSlots };
+  return { coach: found, slots: dbCoachSlots };
 }

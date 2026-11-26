@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { redirect } from 'next/navigation';
 import KcnAdminDashboardClient from '@/components/admin/KcnAdminDashboardClient';
 
@@ -14,13 +15,14 @@ export default async function KcnAdminPage() {
     redirect('/login?redirectTo=/admin/kcn');
   }
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .maybeSingle();
+  const adminClient = createAdminClient();
+  const [{ data: kcnUser }, { data: profile }] = await Promise.all([
+    adminClient.from('kcn_users').select('role').eq('id', user.id).maybeSingle(),
+    adminClient.from('profiles').select('role').eq('id', user.id).maybeSingle(),
+  ]);
 
-  if (!profile || profile.role !== 'admin') {
+  const isAdmin = kcnUser?.role === 'admin' || profile?.role === 'admin';
+  if (!isAdmin) {
     redirect('/');
   }
 

@@ -235,19 +235,29 @@ export const MOCK_COACHES: Coach[] = [
   },
 ];
 
+/** 日本時間（Asia/Tokyo）での今日の YYYY-MM-DD 文字列を返す */
+export function getTodayJstYmd(): string {
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Tokyo',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(new Date());
+}
+
 // 直近の空きスロット生成（デフォルト14日間、月カレンダー用に日数指定可能）
 export function generateMockSlots(coachId: string, days = 14): AvailableSlot[] {
   const slots: AvailableSlot[] = [];
-  const today = new Date('2026-11-10T00:00:00+09:00');
+  const [y, m, day] = getTodayJstYmd().split('-').map(Number);
+  const baseDate = new Date(Date.UTC(y, m - 1, day));
   const dayNames = ['日', '月', '火', '水', '木', '金', '土'];
 
   for (let i = 1; i <= days; i++) {
-    const d = new Date(today);
-    d.setDate(today.getDate() + i);
-    const dateStr = d.toISOString().split('T')[0];
-    const dayOfWeek = dayNames[d.getDay()];
+    const d = new Date(baseDate.getTime() + i * 24 * 60 * 60 * 1000);
+    const dateStr = d.toISOString().slice(0, 10);
+    const dayOfWeek = dayNames[d.getUTCDay()];
 
-    const isWeekend = d.getDay() === 0 || d.getDay() === 6;
+    const isWeekend = d.getUTCDay() === 0 || d.getUTCDay() === 6;
     const timeTemplates = isWeekend
       ? [
           { start: '10:00', end: '11:00' },

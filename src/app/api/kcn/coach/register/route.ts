@@ -52,39 +52,64 @@ export async function POST(req: NextRequest) {
 
     const supabase = createAdminClient();
 
-    // 1. kcn_users の取得または新規作成
+    // 1. kcn_users の取得または新規作成（既存Authユーザーがいる場合はそのIDを再利用）
     let { data: existingUser } = await supabase
       .from('kcn_users')
       .select('id, email, name')
-      .eq('email', email)
+      .ilike('email', email)
       .maybeSingle();
 
     if (!existingUser) {
+      let authUserId: string | null = null;
+
       const { data: authCreated, error: authErr } =
         await supabase.auth.admin.createUser({
           email,
           email_confirm: true,
           user_metadata: { name: displayName, role: 'coach' },
         });
-      if (authErr || !authCreated?.user) {
-        return NextResponse.json(
-          { error: 'コーチアカウントの作成に失敗しました。' },
-          { status: 500 }
+
+      if (authCreated?.user) {
+        authUserId = authCreated.user.id;
+      } else {
+        // 既に Supabase Auth に存在するメールアドレスの場合は既存ユーザーIDを取得して連携する
+        console.warn('kcn coach createUser fallback:', authErr?.message);
+        const { data: listData } = await supabase.auth.admin.listUsers({
+          page: 1,
+          perPage: 1000,
+        });
+        const matchedAuth = listData?.users?.find(
+          (u) => u.email?.toLowerCase() === email.toLowerCase()
         );
+        if (matchedAuth) {
+          authUserId = matchedAuth.id;
+        } else {
+          console.error('kcn coach createUser failed:', authErr);
+          return NextResponse.json(
+            {
+              error: `コーチアカウントの作成に失敗しました。${authErr?.message ? `(${authErr.message})` : ''}`,
+            },
+            { status: 500 }
+          );
+        }
       }
 
       const { data: insertedUser, error: userErr } = await supabase
         .from('kcn_users')
-        .insert({
-          id: authCreated.user.id,
-          role: 'coach',
-          name: displayName,
-          email,
-        })
+        .upsert(
+          {
+            id: authUserId,
+            role: 'coach',
+            name: displayName,
+            email,
+          },
+          { onConflict: 'id' }
+        )
         .select('id, email, name')
         .single();
 
       if (userErr || !insertedUser) {
+        console.error('kcn_users upsert error:', userErr);
         return NextResponse.json(
           { error: 'ユーザー情報の保存に失敗しました。' },
           { status: 500 }
@@ -94,6 +119,11 @@ export async function POST(req: NextRequest) {
     }
 
     // 2. kcn_coach_profiles へ審査待ち（pending_review）で保存
+    const parsedSelfieDate = new Date(selfieTimestamp);
+    const selfieCapturedAtIso = Number.isNaN(parsedSelfieDate.getTime())
+      ? new Date().toISOString()
+      : parsedSelfieDate.toISOString();
+
     const { error: profileErr } = await supabase
       .from('kcn_coach_profiles')
       .upsert(
@@ -104,7 +134,7 @@ export async function POST(req: NextRequest) {
           bio,
           avatar_url: avatarUrl,
           compliance_selfie_path: liveSelfieUrl,
-          selfie_captured_at: new Date(selfieTimestamp).toISOString(),
+          selfie_captured_at: selfieCapturedAtIso,
           sport_categories: sportCategories,
           target_areas: targetAreas,
           review_status: 'pending_review',
@@ -158,11 +188,22 @@ export async function POST(req: NextRequest) {
 
     const gchatWebhookUrl = process.env.GOOGLE_CHAT_WEBHOOK_URL;
     if (gchatWebhookUrl) {
+      const origin =
+        process.env.NEXT_PUBLIC_APP_URL ||
+        req.nextUrl.origin ||
+        'https://kids-coach-navi.vercel.app';
       await fetch(gchatWebhookUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          text: `🏅 *【キッズコーチナビ】新規コーチ審査申請*\n• お名前: ${displayName}\n• Email: ${email}\n• 種目: ${sportCategories.join(', ')}\n• エリア: ${targetAreas.join(', ')}`,
+          text: [
+            `🏅 *【キッズコーチナビ】新規コーチ審査申請*`,
+            `• お名前: ${displayName}`,
+            `• Email: ${email}`,
+            `• 種目: ${sportCategories.join(', ') || '未設定'}`,
+            `• エリア: ${targetAreas.join(', ') || '未設定'}`,
+            `• 審査ページ: ${origin}/admin/kcn`,
+          ].join('\n'),
         }),
       }).catch((err) => console.error('coach register gchat error:', err));
     }

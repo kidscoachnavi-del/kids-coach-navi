@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
+import type { Coach, AvailableSlot } from '@/data/kids-coach-mock';
 import {
   Monitor,
   Tablet,
@@ -26,105 +27,37 @@ import {
 type ViewportMode = 'desktop' | 'tablet' | 'mobile';
 type SportKey = 'kakekko' | 'swimming' | 'iron-bar' | 'jump-rope';
 
-interface CoachPreviewData {
-  id: string;
-  sportLabel: string;
-  sportSlug: string;
-  name: string;
-  bio: string;
-  rating: string;
-  reviewCount: number;
-  tag: string;
-  title: string;
-  summary: string;
-  area: string;
-  priceAmount: string;
-  initial: string;
-  nextSlots: { dateLabel: string; timeLabel: string }[];
-}
-
-const COACH_DATA: Record<SportKey, CoachPreviewData> = {
+const SPORT_TABS: Record<
+  SportKey,
+  { sportLabel: string; sportSlug: string; keywords: string[] }
+> = {
   kakekko: {
-    id: 'coach-1',
     sportLabel: 'かけっこ',
     sportSlug: 'running',
-    name: '田中 健太 コーチ',
-    bio: '元インカレ陸上 ｜ 指導歴5年',
-    rating: '4.9',
-    reviewCount: 42,
-    tag: '#かけっこ・走り方',
-    title: '【世田谷・駒沢】腕振りと姿勢で劇的に変わる！足が速くなる60分特訓',
-    summary: '地面を蹴る感覚と腕振りの連動を楽しく習得。運動会前の単発受講でもフォームの変化を実感できます。',
-    area: '世田谷区・目黒区・駒沢公園周辺へ出張',
-    priceAmount: '6,500',
-    initial: '田中',
-    nextSlots: [
-      { dateLabel: '11/14 (土)', timeLabel: '10:00〜' },
-      { dateLabel: '11/14 (土)', timeLabel: '13:30〜' },
-      { dateLabel: '11/15 (日)', timeLabel: '10:00〜' },
-    ],
+    keywords: ['かけっこ', '走り', '陸上', 'running'],
   },
   swimming: {
-    id: 'coach-2',
     sportLabel: '水泳',
     sportSlug: 'swimming',
-    name: '山本 翔平 コーチ',
-    bio: '日本水泳連盟公認指導員 ｜ 元国体選手',
-    rating: '5.0',
-    reviewCount: 38,
-    tag: '#水泳・息継ぎ',
-    title: '【江東・中央】苦手克服！クロール息継ぎ・25m完泳マンツーマン 60分',
-    summary: '集団スクールで進級できない原因を60分で特定。個人指導が可能なプール施設等へ出張し、怖がらせずに完泳へ導きます。',
-    area: '江東区・中央区（レッスン可能なプール施設へ出張）',
-    priceAmount: '7,500',
-    initial: '山本',
-    nextSlots: [
-      { dateLabel: '11/14 (土)', timeLabel: '13:30〜' },
-      { dateLabel: '11/15 (日)', timeLabel: '10:00〜' },
-      { dateLabel: '11/16 (月)', timeLabel: '16:00〜' },
-    ],
+    keywords: ['水泳', 'スイミング', '泳', 'swimming'],
   },
   'iron-bar': {
-    id: 'coach-3',
     sportLabel: '逆上がり・鉄棒',
     sportSlug: 'school-pe',
-    name: '佐々木 翼 コーチ',
-    bio: '元体操競技選手 ｜ 指導歴6年',
-    rating: '4.9',
-    reviewCount: 51,
-    tag: '#鉄棒・逆上がり',
-    title: '【目黒・港】回る感覚がすぐ掴める！恐怖心ゼロの逆上がり特訓 60分',
-    summary: '筋力ではなく「目線」と「引きつけ」を段階指導。近所の公園の鉄棒で、お子様の成功体験を引き出します。',
-    area: '港区・品川区・目黒区・近隣公園へ出張',
-    priceAmount: '6,000',
-    initial: '佐々木',
-    nextSlots: [
-      { dateLabel: '11/14 (土)', timeLabel: '10:00〜' },
-      { dateLabel: '11/15 (日)', timeLabel: '15:30〜' },
-      { dateLabel: '11/17 (火)', timeLabel: '16:00〜' },
-    ],
+    keywords: ['鉄棒', '逆上がり', '体操', '学校体育', 'school-pe'],
   },
   'jump-rope': {
-    id: 'coach-4',
     sportLabel: 'なわとび',
     sportSlug: 'school-pe',
-    name: '高橋 陸 コーチ',
-    bio: '小学校体育専門指導員 ｜ 体育大卒',
-    rating: '4.8',
-    reviewCount: 29,
-    tag: '#なわとび・二重跳び',
-    title: '【千葉・都内】手首の回旋とリズム感で跳べる！二重跳び・体育基礎 60分',
-    summary: 'ジャンプのタイミングと手首の回し方を分解指導。学校体育のテスト前に1〜2回の短期集中で自信がつきます。',
-    area: '世田谷区・品川区・浦安市・近隣公園へ出張',
-    priceAmount: '5,500',
-    initial: '高橋',
-    nextSlots: [
-      { dateLabel: '11/15 (日)', timeLabel: '13:30〜' },
-      { dateLabel: '11/16 (月)', timeLabel: '17:30〜' },
-      { dateLabel: '11/18 (水)', timeLabel: '16:00〜' },
-    ],
+    keywords: ['なわとび', '縄跳び', '体育', 'school-pe'],
   },
 };
+
+function formatSlotShortDate(dateStr: string, dayOfWeek: string): string {
+  const [, m, d] = dateStr.split('-');
+  if (!m || !d) return dateStr;
+  return `${Number(m)}/${Number(d)} (${dayOfWeek})`;
+}
 
 type VoiceSportFilter = 'all' | 'kakekko' | 'swimming' | 'iron-bar';
 type VoiceAccent = 'coral' | 'sage' | 'sun';
@@ -273,7 +206,15 @@ const FAQ_ITEMS: FaqItem[] = [
   },
 ];
 
-export default function HomePageClient() {
+interface HomePageClientProps {
+  realCoaches?: Coach[];
+  realSlots?: AvailableSlot[];
+}
+
+export default function HomePageClient({
+  realCoaches = [],
+  realSlots = [],
+}: HomePageClientProps) {
   const [viewport, setViewport] = useState<ViewportMode>('desktop');
   const [showPreviewBar, setShowPreviewBar] = useState<boolean>(
     process.env.NODE_ENV !== 'production'
@@ -333,7 +274,42 @@ export default function HomePageClient() {
     setOpenFaqs(nextState);
   };
 
-  const currentCoach = COACH_DATA[selectedSport] || COACH_DATA.kakekko;
+  const selectedTab = SPORT_TABS[selectedSport] || SPORT_TABS.kakekko;
+  const matchedCoach =
+    realCoaches.find((c) =>
+      selectedTab.keywords.some(
+        (kw) =>
+          c.sports.some((s) => s.includes(kw)) ||
+          c.sportsSlugs.includes(selectedTab.sportSlug)
+      )
+    ) ||
+    realCoaches[0] ||
+    null;
+
+  const currentCoach = matchedCoach
+    ? {
+        id: matchedCoach.id,
+        sportLabel: selectedTab.sportLabel,
+        sportSlug: matchedCoach.sportsSlugs[0] || selectedTab.sportSlug,
+        name: `${matchedCoach.name} コーチ`,
+        bio: matchedCoach.title,
+        rating: matchedCoach.rating.toFixed(1),
+        reviewCount: matchedCoach.reviewCount,
+        tag: `#${matchedCoach.sports[0] || selectedTab.sportLabel}`,
+        title: matchedCoach.bio || matchedCoach.title,
+        summary: matchedCoach.message || matchedCoach.bio,
+        area: `${matchedCoach.areas.join('・')}へ出張`,
+        priceAmount: matchedCoach.hourlyRate.toLocaleString(),
+        initial: matchedCoach.initial || matchedCoach.name.slice(0, 1),
+        nextSlots: realSlots
+          .filter((s) => s.coachId === matchedCoach.id && s.status === 'available')
+          .slice(0, 3)
+          .map((s) => ({
+            dateLabel: formatSlotShortDate(s.date, s.dayOfWeek),
+            timeLabel: `${s.startTime}〜`,
+          })),
+      }
+    : null;
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -527,10 +503,10 @@ export default function HomePageClient() {
                 </a>
                 <div className="pt-2.5 border-t border-[#EADBCC]/60 flex flex-wrap gap-2">
                   <Link
-                    href={`/coaches/${currentCoach.id}`}
+                    href={currentCoach ? `/coaches/${currentCoach.id}` : `/sports/${selectedTab.sportSlug}`}
                     className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#3E8E84] text-white text-[11px]"
                   >
-                    <span>コーチ詳細・予約カレンダーへ</span>
+                    <span>{currentCoach ? 'コーチ詳細・予約カレンダーへ' : '種目別ページを見る'}</span>
                     <ChevronRight className="w-3.5 h-3.5" strokeWidth={1.75} />
                   </Link>
                   <Link
@@ -710,7 +686,7 @@ export default function HomePageClient() {
               {/* 種目クイック切替タブ（上の検索セレクトと連動） */}
               <div className="flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 mb-5">
                 {(['kakekko', 'swimming', 'iron-bar', 'jump-rope'] as SportKey[]).map((key) => {
-                  const item = COACH_DATA[key];
+                  const item = SPORT_TABS[key];
                   const isActive = selectedSport === key;
                   return (
                     <button
@@ -729,7 +705,8 @@ export default function HomePageClient() {
                 })}
               </div>
 
-              {/* コーチカード本体 */}
+              {/* コーチカード本体（DBの実承認済みコーチのみ表示） */}
+              {currentCoach ? (
               <div
                 id="coach-card-preview"
                 style={{ opacity: cardOpacity }}
@@ -822,20 +799,26 @@ export default function HomePageClient() {
                     <span className="text-[10px]">タップで日程確認</span>
                   </div>
                   <div className="grid grid-cols-3 gap-2">
-                    {currentCoach.nextSlots.map((slot, idx) => (
-                      <Link
-                        key={idx}
-                        href={`/coaches/${currentCoach.id}`}
-                        className="py-2 px-2 rounded-xl bg-[#FDFBF7] hover:bg-[#FCE7A2]/50 border border-[#EADBCC] hover:border-[#E3644F] text-center transition-colors group"
-                      >
-                        <span className="block font-en text-[10px] font-bold text-[#5E5B54] group-hover:text-[#2C2B29]">
-                          {slot.dateLabel}
-                        </span>
-                        <span className="block font-en text-xs font-extrabold text-[#2C2B29] group-hover:text-[#E3644F]">
-                          {slot.timeLabel}
-                        </span>
-                      </Link>
-                    ))}
+                    {currentCoach.nextSlots.length > 0 ? (
+                      currentCoach.nextSlots.map((slot, idx) => (
+                        <Link
+                          key={idx}
+                          href={`/coaches/${currentCoach.id}`}
+                          className="py-2 px-2 rounded-xl bg-[#FDFBF7] hover:bg-[#FCE7A2]/50 border border-[#EADBCC] hover:border-[#E3644F] text-center transition-colors group"
+                        >
+                          <span className="block font-en text-[10px] font-bold text-[#5E5B54] group-hover:text-[#2C2B29]">
+                            {slot.dateLabel}
+                          </span>
+                          <span className="block font-en text-xs font-extrabold text-[#2C2B29] group-hover:text-[#E3644F]">
+                            {slot.timeLabel}
+                          </span>
+                        </Link>
+                      ))
+                    ) : (
+                      <div className="col-span-3 py-3 px-3 rounded-xl bg-[#FDFBF7] border border-[#EADBCC] text-center text-[11px] text-[#5E5B54] font-bold">
+                        現在、公開中の空き枠はありません
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -848,7 +831,7 @@ export default function HomePageClient() {
                     }
                     className="w-full py-3.5 bg-[#3E8E84] hover:bg-[#32756d] text-white text-xs sm:text-sm font-bold rounded-full shadow-xs transition-all flex items-center justify-center gap-1.5"
                   >
-                    <span>全14日間の空き日程・詳細を見る</span>
+                    <span>空き日程・詳細を見る</span>
                     <ChevronRight className="w-4 h-4" strokeWidth={1.75} />
                   </Link>
 
@@ -863,6 +846,30 @@ export default function HomePageClient() {
                   </div>
                 </div>
               </div>
+              ) : (
+              <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#EADBCC] shadow-xs text-center space-y-3">
+                <p className="font-heading text-sm sm:text-base font-bold text-[#2C2B29]">
+                  現在、認定コーチの審査・登録準備中です
+                </p>
+                <p className="text-xs text-[#5E5B54] leading-relaxed">
+                  審査を通過した認定コーチが公開され次第、こちらから空き枠の確認・ご予約が可能になります。
+                </p>
+                <div className="pt-1 flex flex-wrap justify-center gap-2.5">
+                  <Link
+                    href={`/sports/${selectedTab.sportSlug}`}
+                    className="px-4 py-2 rounded-full bg-[#3E8E84] hover:bg-[#32756d] text-white text-xs font-bold transition-colors"
+                  >
+                    {selectedTab.sportLabel}の対応エリアを見る
+                  </Link>
+                  <Link
+                    href="/coach/onboarding"
+                    className="px-4 py-2 rounded-full border border-[#EADBCC] bg-[#FDFBF7] hover:border-[#E3644F] text-[#2C2B29] text-xs font-bold transition-colors"
+                  >
+                    コーチ新規登録はこちら
+                  </Link>
+                </div>
+              </div>
+              )}
             </section>
 
             {/* ==================== 4. 課題提起セクション ==================== */}

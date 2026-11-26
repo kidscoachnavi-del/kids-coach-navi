@@ -50,16 +50,9 @@ export default function CoachOnboardingDemo() {
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [liveSelfieUrl, setLiveSelfieUrl] = useState<string | null>(null);
   const [selfieTimestamp, setSelfieTimestamp] = useState<string | null>(null);
-  const [isVerifyingSelfie, setIsVerifyingSelfie] = useState(false);
-  const [selfieVerifyScore, setSelfieVerifyScore] = useState<number | null>(null);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
-
-  // ③ Stripe Connect 連携状態
-  const [isConnectingStripe, setIsConnectingStripe] = useState(false);
-  const [stripeConnected, setStripeConnected] = useState(false);
-  const [stripeConnectError, setStripeConnectError] = useState<string | null>(null);
 
   // 登録申請・規約同意状態（false: 情報入力中 / true: 申請完了・運営目視審査待ち）
   const [agreedToTerms, setAgreedToTerms] = useState(false);
@@ -207,8 +200,8 @@ export default function CoachOnboardingDemo() {
     return { ok: true };
   };
 
-  /** リアルタイム撮影画像の簡易品質チェックを実行する */
-  const runAutomatedSelfieVerification = (capturedDataUrl: string) => {
+  /** リアルタイム撮影画像を保存する */
+  const saveCapturedSelfie = (capturedDataUrl: string) => {
     setCameraError(null);
     setLiveSelfieUrl(capturedDataUrl);
     setSelfieTimestamp(
@@ -221,16 +214,9 @@ export default function CoachOnboardingDemo() {
         second: '2-digit',
       })
     );
-    setIsVerifyingSelfie(true);
-    setSelfieVerifyScore(null);
-
-    setTimeout(() => {
-      setIsVerifyingSelfie(false);
-      setSelfieVerifyScore(100);
-    }, 600);
   };
 
-  /** 起動中カメラのフレームを撮影し、明度・単色チェックを通してから承認する */
+  /** 起動中カメラのフレームを撮影し、明度・単色チェックを通してから保存する */
   const handleCapturePhoto = () => {
     if (!videoRef.current) return;
     const video = videoRef.current;
@@ -249,7 +235,7 @@ export default function CoachOnboardingDemo() {
       }
       const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
       stopCamera();
-      runAutomatedSelfieVerification(dataUrl);
+      saveCapturedSelfie(dataUrl);
     }
   };
 
@@ -257,49 +243,16 @@ export default function CoachOnboardingDemo() {
   const handleSimulateLiveCapture = () => {
     stopCamera();
     setCameraError(null);
-    runAutomatedSelfieVerification(
+    saveCapturedSelfie(
       'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80'
     );
   };
 
-  /** Stripe Identity + Connect 自動本人確認・口座連携（実API呼び出し） */
-  const handleStripeConnect = async () => {
-    setIsConnectingStripe(true);
-    setStripeConnectError(null);
-
-    try {
-      const res = await fetch('/api/kcn/coach/connect', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: coachEmail || 'tanaka_coach@wellne.example.com',
-          displayName,
-        }),
-      });
-      const data = await res.json();
-
-      if (!res.ok || !data?.onboardingUrl) {
-        setStripeConnectError(
-          data?.error || 'Stripe Connect の連携URL発行に失敗しました。Stripe ダッシュボードで Connect が有効化されているかご確認ください。'
-        );
-        setIsConnectingStripe(false);
-        return;
-      }
-
-      window.open(data.onboardingUrl, '_blank', 'noopener,noreferrer');
-      setIsConnectingStripe(false);
-      setStripeConnected(true);
-    } catch {
-      setStripeConnectError('通信エラーが発生しました。時間をおいて再度お試しください。');
-      setIsConnectingStripe(false);
-    }
-  };
-
-  // コンプライアンス3要件がすべて満たされているか
+  // コンプライアンス必須2要件（顔写真登録＋リアルタイム顔撮影）が満たされているか
+  // ※ Stripe Connect（公的身分証・口座連携）は運営の目視審査承認後にコーチダッシュボードで実施
   const hasAvatar = Boolean(avatarPreview);
-  const hasVerifiedLiveSelfie =
-    Boolean(liveSelfieUrl) && selfieVerifyScore !== null;
-  const isComplianceReady = hasAvatar && hasVerifiedLiveSelfie && stripeConnected;
+  const hasVerifiedLiveSelfie = Boolean(liveSelfieUrl);
+  const isComplianceReady = hasAvatar && hasVerifiedLiveSelfie;
   const canSubmit = isComplianceReady && agreedToTerms;
 
   const handleCompleteOnboarding = async (e: React.FormEvent) => {
@@ -403,7 +356,7 @@ export default function CoachOnboardingDemo() {
                   {displayName} コーチの登録申請を受け付けました
                 </h2>
                 <p className="text-xs sm:text-sm text-[#5E5B54] leading-relaxed">
-                  ご提出いただいた顔写真・カメラ撮影画像および Stripe Connect の内容を運営にて目視確認いたします。審査承認後にメールでご案内し、登録完了となります。
+                  ご提出いただいた顔写真・カメラ撮影画像を運営にて目視確認いたします。審査承認後にメールでご案内いたしますので、承認後にコーチダッシュボードより振込先口座（Stripe Connect）連携およびレッスン枠の公開を行ってください。
                 </p>
               </div>
 
@@ -415,10 +368,10 @@ export default function CoachOnboardingDemo() {
                   対応エリア：<strong className="text-[#2C2B29]">{selectedAreas.join('・') || '未選択'}</strong>
                 </div>
                 <div>
-                  提出状況：<strong className="text-[#3E8E84]">顔写真登録済 / カメラ撮影済（{selfieTimestamp}） / Stripe Connect 連携済</strong>
+                  提出状況：<strong className="text-[#3E8E84]">顔写真登録済 / カメラ撮影済（{selfieTimestamp}）</strong>
                 </div>
-                <div>
-                  報酬受け取り：<strong className="text-[#3E8E84]">受講料の75%（2週に1回 Stripe 自動振込）</strong>
+                <div className="pt-1 text-[11px] text-[#5E5B54]">
+                  ※ 振込先口座連携（Stripe Connect）および報酬設定の反映は、審査承認後に有効となります。
                 </div>
               </div>
 
@@ -431,10 +384,10 @@ export default function CoachOnboardingDemo() {
                   ← 入力内容を修正する
                 </button>
                 <Link
-                  href="/coach/dashboard"
+                  href="/"
                   className="w-full sm:w-auto inline-flex h-11 px-6 rounded-full bg-[#2C2B29] hover:bg-[#3E8E84] text-white font-bold text-xs items-center justify-center gap-2 transition-colors whitespace-nowrap"
                 >
-                  <span>コーチダッシュボードを確認する</span>
+                  <span>トップページへ戻る</span>
                   <ArrowRight className="w-4 h-4 shrink-0" strokeWidth={1.75} />
                 </Link>
               </div>
@@ -475,7 +428,7 @@ export default function CoachOnboardingDemo() {
                         </span>
                       </div>
                       <p className="text-[11px] text-[#5E5B54] leading-relaxed">
-                        マスク・サングラスなしの正面の顔写真を登録してください（本人確認時の自動照合にも使用します）。
+                        マスク・サングラスなしの正面の顔写真を登録してください（運営による本人確認の目視審査にも使用します）。
                       </p>
                     </div>
                   </div>
@@ -630,7 +583,7 @@ export default function CoachOnboardingDemo() {
                 </div>
               </div>
 
-              {/* STEP 2: コンプライアンス必須・リアルタイム顔撮影＆自動照合 */}
+              {/* STEP 2: コンプライアンス必須・リアルタイム顔撮影（運営目視確認用） */}
               <div className="bg-white rounded-3xl border border-[#EADBCC] p-4 sm:p-6 shadow-xs space-y-4">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div className="flex items-center gap-2">
@@ -675,7 +628,7 @@ export default function CoachOnboardingDemo() {
                         className="h-10 px-5 rounded-full bg-[#E3644F] hover:bg-[#d05540] text-white font-bold text-xs inline-flex items-center gap-1.5 cursor-pointer"
                       >
                         <Camera className="w-4 h-4 shrink-0" strokeWidth={1.75} />
-                        <span>この顔で撮影・自動照合する</span>
+                        <span>この顔で撮影する</span>
                       </button>
                       <button
                         type="button"
@@ -695,16 +648,10 @@ export default function CoachOnboardingDemo() {
                         className="w-14 h-14 rounded-2xl object-cover border border-[#3E8E84] shrink-0"
                       />
                       <div className="space-y-0.5">
-                        {isVerifyingSelfie ? (
-                          <div className="font-bold text-[#2C2B29]">
-                            撮影画像の品質チェックを実行中...
-                          </div>
-                        ) : (
-                          <div className="inline-flex items-center gap-1 font-bold text-[#3E8E84]">
-                            <ShieldCheck className="w-4 h-4 shrink-0" strokeWidth={2} />
-                            <span>撮影品質チェッククリア（明度・輪郭確認済）</span>
-                          </div>
-                        )}
+                        <div className="inline-flex items-center gap-1 font-bold text-[#3E8E84]">
+                          <ShieldCheck className="w-4 h-4 shrink-0" strokeWidth={2} />
+                          <span>撮影完了（運営目視審査用に添付済）</span>
+                        </div>
                         <div className="text-[10px] text-[#5E5B54] font-en">
                           撮影日時: {selfieTimestamp}
                         </div>
@@ -741,66 +688,12 @@ export default function CoachOnboardingDemo() {
                 )}
               </div>
 
-              {/* STEP 3: Stripe Identity（公的身分証自動KYC）＆ 口座連携 */}
-              <div className="bg-white rounded-3xl border border-[#EADBCC] p-4 sm:p-6 shadow-xs space-y-4">
-                <div className="flex items-center gap-2">
-                  <span className="w-6 h-6 rounded-full bg-[#2C2B29] text-white font-en text-[11px] font-bold flex items-center justify-center shrink-0">
-                    3
-                  </span>
-                  <h2 className="font-heading text-sm sm:text-base font-bold text-[#2C2B29]">
-                    Stripe Connect 本人確認（公的身分証）＆ 口座連携
-                  </h2>
-                </div>
-
-                <div className="p-4 rounded-2xl bg-[#3E8E84]/10 border border-[#3E8E84]/30 space-y-3">
-                  <div className="flex items-start gap-2.5 text-[#2C2B29]">
-                    <UserCheck className="w-4 h-4 text-[#3E8E84] shrink-0 mt-0.5" strokeWidth={1.75} />
-                    <div className="space-y-1 text-[11px] text-[#5E5B54] leading-relaxed">
-                      <p className="font-bold text-[#2C2B29]">
-                        公的身分証（運転免許証・マイナンバーカード等）の確認と振込口座管理を Stripe Connect 標準機能で実施
-                      </p>
-                      <p>
-                        当サイトでは身分証画像・口座番号を一切保持しません。報酬（75%）は2週に1回自動振込されます。
-                      </p>
-                    </div>
-                  </div>
-
-                  {stripeConnected ? (
-                    <div className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-full bg-[#3E8E84] text-white font-bold text-xs">
-                      <Shield className="w-4 h-4 shrink-0" strokeWidth={1.75} />
-                      <span>Stripe 自動本人確認・口座連携 承認済み</span>
-                    </div>
-                  ) : (
-                    <div className="space-y-2.5">
-                      {stripeConnectError && (
-                        <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-[11px] font-bold">
-                          {stripeConnectError}
-                        </div>
-                      )}
-                      <button
-                        type="button"
-                        onClick={handleStripeConnect}
-                        disabled={isConnectingStripe}
-                        className="w-full sm:w-auto min-h-11 py-2.5 px-4 sm:px-5 rounded-full bg-[#3E8E84] hover:bg-[#32756d] text-white font-bold text-xs flex items-center justify-center gap-2 transition-colors cursor-pointer disabled:opacity-50 text-center"
-                      >
-                      <ExternalLink className="w-4 h-4 shrink-0" strokeWidth={1.75} />
-                      <span>
-                        {isConnectingStripe
-                          ? 'Stripe 自動審査・連携中...'
-                          : 'Stripe で本人確認・口座連携'}
-                      </span>
-                    </button>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* コンプライアンス必須チェックリスト ＆ 完了ボタン */}
+              {/* 審査申請前の必須チェックリスト ＆ 完了ボタン */}
               <div className="bg-white rounded-3xl border border-[#EADBCC] p-4 sm:p-5 space-y-3">
                 <div className="text-[11px] font-bold text-[#2C2B29]">
-                  出品前のコンプライアンス必須チェック
+                  審査申請前の必須チェック
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-[11px] font-bold">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px] font-bold">
                   <div
                     className={`px-3 py-2 rounded-xl border flex items-center gap-1.5 ${
                       hasAvatar
@@ -821,17 +714,10 @@ export default function CoachOnboardingDemo() {
                     <CheckCircle2 className="w-3.5 h-3.5 shrink-0" strokeWidth={2} />
                     <span>2. 登録時顔撮影クリア</span>
                   </div>
-                  <div
-                    className={`px-3 py-2 rounded-xl border flex items-center gap-1.5 ${
-                      stripeConnected
-                        ? 'bg-[#D2E7DF]/40 border-[#3E8E84]/40 text-[#3E8E84]'
-                        : 'bg-[#FDFBF7] border-[#EADBCC] text-[#8A857B]'
-                    }`}
-                  >
-                    <CheckCircle2 className="w-3.5 h-3.5 shrink-0" strokeWidth={2} />
-                    <span>3. Stripe Connect KYC</span>
-                  </div>
                 </div>
+                <p className="text-[11px] text-[#5E5B54] leading-relaxed">
+                  ※ 振込先口座および公的身分証の連携（Stripe Connect）は、運営による目視審査の承認後にコーチダッシュボードから行っていただけます。
+                </p>
 
                 {/* コーチ利用規約・プライバシーポリシー同意（必須） */}
                 <div className="p-3.5 rounded-2xl border border-[#EADBCC] bg-[#FDFBF7]">
@@ -883,7 +769,7 @@ export default function CoachOnboardingDemo() {
                       : canSubmit
                         ? '登録情報を送信して審査へ進む'
                         : !isComplianceReady
-                          ? '必須3項目をすべて完了すると審査申請できます'
+                          ? '必須2項目を完了すると審査申請できます'
                           : 'コーチ利用規約への同意が必要です'}
                   </span>
                 </button>
