@@ -53,7 +53,8 @@ export async function login(prevState: any, formData: FormData) {
             .maybeSingle(),
     ])
 
-    const role = kcnUser?.role || profile?.role || 'coach'
+    const isAdminEmail = user.email?.toLowerCase() === 'info@swim-partners.com'
+    const role = isAdminEmail ? 'admin' : kcnUser?.role || profile?.role || 'coach'
 
     // Clear cache specifically for dashboard layouts to ensure fresh profile data
     revalidatePath('/admin/kcn', 'page')

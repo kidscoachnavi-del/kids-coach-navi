@@ -12,13 +12,14 @@ async function assertAdmin() {
     return { ok: false as const, status: 401, userId: null };
   }
 
+  const isAdminEmail = user.email?.toLowerCase() === 'info@swim-partners.com';
   const adminClient = createAdminClient();
   const [{ data: kcnUser }, { data: profile }] = await Promise.all([
     adminClient.from('kcn_users').select('role').eq('id', user.id).maybeSingle(),
     adminClient.from('profiles').select('role').eq('id', user.id).maybeSingle(),
   ]);
 
-  if (kcnUser?.role !== 'admin' && profile?.role !== 'admin') {
+  if (!isAdminEmail && kcnUser?.role !== 'admin' && profile?.role !== 'admin') {
     return { ok: false as const, status: 403, userId: user.id };
   }
 

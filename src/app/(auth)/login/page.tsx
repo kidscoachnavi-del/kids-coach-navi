@@ -135,9 +135,12 @@ function LoginForm() {
                     </Button>
                 </form>
 
-                <div className="mt-8 text-center">
-                    <Link href="/forgot-password" className="text-sm text-slate-500 hover:text-primary transition-colors">
+                <div className="mt-8 text-center space-y-2.5">
+                    <Link href="/forgot-password" className="block text-xs text-slate-500 hover:text-primary transition-colors">
                         パスワードをお忘れですか？
+                    </Link>
+                    <Link href="/coach/onboarding" className="block text-xs font-bold text-[#3E8E84] hover:underline">
+                        コーチ新規登録・審査申請はこちら →
                     </Link>
                 </div>
             </div >

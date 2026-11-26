@@ -23,13 +23,26 @@ export default async function KcnAdminPage() {
     redirect('/login?redirectTo=/admin/kcn');
   }
 
+  const isAdminEmail = user.email?.toLowerCase() === 'info@swim-partners.com';
   const adminClient = createAdminClient();
   const [{ data: kcnUser }, { data: profile }] = await Promise.all([
     adminClient.from('kcn_users').select('role').eq('id', user.id).maybeSingle(),
     adminClient.from('profiles').select('role').eq('id', user.id).maybeSingle(),
   ]);
 
-  const isAdmin = kcnUser?.role === 'admin' || profile?.role === 'admin';
+  if (isAdminEmail && kcnUser?.role !== 'admin') {
+    await adminClient.from('kcn_users').upsert(
+      {
+        id: user.id,
+        role: 'admin',
+        name: 'SWIM PARTNERS 管理者',
+        email: user.email!,
+      },
+      { onConflict: 'id' }
+    );
+  }
+
+  const isAdmin = isAdminEmail || kcnUser?.role === 'admin' || profile?.role === 'admin';
   if (!isAdmin) {
     redirect('/');
   }
