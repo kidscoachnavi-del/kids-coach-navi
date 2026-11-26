@@ -7,6 +7,7 @@ import CoachCard from '@/components/kids-coach/CoachCard';
 import DemandRequestCard from '@/components/kids-coach/DemandRequestCard';
 import KidsCoachFooter from '@/components/kids-coach/Footer';
 import JsonLd from '@/components/kids-coach/JsonLd';
+import { fetchApprovedCoachesWithSlots } from '@/lib/kcn-coaches';
 import {
   SPORT_CATEGORIES,
   AREA_LIST,
@@ -61,8 +62,9 @@ export default async function SportCategoryPage({ params }: SportPageProps) {
     notFound();
   }
 
-  // 該当種目のコーチを抽出
-  const coaches = MOCK_COACHES.filter(
+  // 該当種目のコーチを抽出（承認済みDB優先・モックフォールバック）
+  const { coaches: allCoaches } = await fetchApprovedCoachesWithSlots();
+  const coaches = allCoaches.filter(
     (c) =>
       c.sportsSlugs.includes(sport_slug) ||
       c.sports.some((s) => s.includes(category.name.slice(0, 2)))

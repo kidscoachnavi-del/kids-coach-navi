@@ -20,14 +20,15 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const { coachId, email } = (await req.json()) as {
-      coachId: string;
+    const { coachId, email, displayName } = (await req.json()) as {
+      coachId?: string;
       email?: string;
+      displayName?: string;
     };
 
-    if (!coachId) {
+    if (!coachId && !email) {
       return NextResponse.json(
-        { error: 'coachId が指定されていません。' },
+        { error: 'coachId またはメールアドレスを指定してください。' },
         { status: 400 }
       );
     }
@@ -38,18 +39,78 @@ export async function POST(req: NextRequest) {
       req.nextUrl.origin ||
       'https://kids-coach-navi.com';
 
-    const { data: profile } = await supabase
-      .from('kcn_coach_profiles')
-      .select('id, stripe_account_id')
-      .eq('id', coachId)
-      .single();
+    let profile: { id: string; stripe_account_id: string | null } | null = null;
+
+    if (coachId) {
+      const { data } = await supabase
+        .from('kcn_coach_profiles')
+        .select('id, stripe_account_id')
+        .eq('id', coachId)
+        .maybeSingle();
+      profile = data;
+    }
+
+    if (!profile && email) {
+      const { data: userByEmail } = await supabase
+        .from('kcn_users')
+        .select('id')
+        .eq('email', email.trim())
+        .maybeSingle();
+
+      let targetId = userByEmail?.id;
+      if (!targetId) {
+        const { data: authCreated } = await supabase.auth.admin.createUser({
+          email: email.trim(),
+          email_confirm: true,
+          user_metadata: { name: displayName || '新規コーチ', role: 'coach' },
+        });
+        if (authCreated?.user) {
+          targetId = authCreated.user.id;
+          await supabase.from('kcn_users').insert({
+            id: targetId,
+            role: 'coach',
+            name: displayName || '新規コーチ',
+            email: email.trim(),
+          });
+        }
+      }
+
+      if (targetId) {
+        const { data: existingProf } = await supabase
+          .from('kcn_coach_profiles')
+          .select('id, stripe_account_id')
+          .eq('id', targetId)
+          .maybeSingle();
+
+        if (existingProf) {
+          profile = existingProf;
+        } else {
+          const { data: insertedProf } = await supabase
+            .from('kcn_coach_profiles')
+            .insert({
+              id: targetId,
+              display_name: displayName || '新規コーチ',
+              title: '申請中コーチ',
+              avatar_url: '',
+              compliance_selfie_path: '',
+              selfie_captured_at: new Date().toISOString(),
+              review_status: 'pending_review',
+            })
+            .select('id, stripe_account_id')
+            .single();
+          profile = insertedProf;
+        }
+      }
+    }
 
     if (!profile) {
       return NextResponse.json(
-        { error: 'コーチプロフィールが見つかりません。' },
+        { error: 'コーチプロフィールが見つかりません。メールアドレスをご入力ください。' },
         { status: 404 }
       );
     }
+
+    const resolvedCoachId = profile.id;
 
     let accountId = profile.stripe_account_id;
     if (!accountId) {
@@ -66,13 +127,13 @@ export async function POST(req: NextRequest) {
             schedule: { interval: 'manual' },
           },
         },
-        metadata: { kcn_coach_id: coachId },
+        metadata: { kcn_coach_id: resolvedCoachId },
       });
       accountId = account.id;
       await supabase
         .from('kcn_coach_profiles')
         .update({ stripe_account_id: accountId })
-        .eq('id', coachId);
+        .eq('id', resolvedCoachId);
     }
 
     const accountLink = await stripe.accountLinks.create({
@@ -83,6 +144,7 @@ export async function POST(req: NextRequest) {
     });
 
     return NextResponse.json({
+      coachId: resolvedCoachId,
       accountId,
       onboardingUrl: accountLink.url,
     });

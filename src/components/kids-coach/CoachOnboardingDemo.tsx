@@ -27,6 +27,7 @@ const CORE_AREA_SLUGS = ['setagaya', 'meguro', 'minato', 'shibuya', 'shinagawa']
  */
 export default function CoachOnboardingDemo() {
   const [displayName, setDisplayName] = useState('田中 健太');
+  const [coachEmail, setCoachEmail] = useState('');
   const [title, setTitle] = useState('元インカレ陸上 ｜ 指導歴5年');
   const [selectedSports, setSelectedSports] = useState<string[]>([
     'かけっこ・陸上',
@@ -62,6 +63,8 @@ export default function CoachOnboardingDemo() {
 
   // 登録申請・規約同意状態（false: 情報入力中 / true: 申請完了・運営目視審査待ち）
   const [agreedToTerms, setAgreedToTerms] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const [isSubmitted, setIsSubmitted] = useState(false);
 
   const coreAreas = AREA_LIST.filter((a) => CORE_AREA_SLUGS.includes(a.slug));
@@ -269,8 +272,8 @@ export default function CoachOnboardingDemo() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          coachId: '5bc775a8-db57-4483-a0a9-4267a9d8345a',
-          email: 'tanaka_coach@wellne.example.com',
+          email: coachEmail || 'tanaka_coach@wellne.example.com',
+          displayName,
         }),
       });
       const data = await res.json();
@@ -299,10 +302,48 @@ export default function CoachOnboardingDemo() {
   const isComplianceReady = hasAvatar && hasVerifiedLiveSelfie && stripeConnected;
   const canSubmit = isComplianceReady && agreedToTerms;
 
-  const handleCompleteOnboarding = (e: React.FormEvent) => {
+  const handleCompleteOnboarding = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!canSubmit) return;
-    setIsSubmitted(true);
+    if (!canSubmit || isSubmitting) return;
+
+    if (!coachEmail.trim()) {
+      setSubmitError('ご連絡・審査結果通知用のメールアドレスをご入力ください。');
+      return;
+    }
+
+    setIsSubmitting(true);
+    setSubmitError(null);
+
+    try {
+      const res = await fetch('/api/kcn/coach/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          displayName,
+          email: coachEmail.trim(),
+          title,
+          selectedSports,
+          selectedAreas,
+          bio,
+          avatarUrl: avatarPreview,
+          liveSelfieUrl,
+          selfieTimestamp,
+        }),
+      });
+      const data = await res.json();
+
+      if (!res.ok || !data?.ok) {
+        setSubmitError(data?.error || '登録申請の送信に失敗しました。');
+        setIsSubmitting(false);
+        return;
+      }
+
+      setIsSubmitting(false);
+      setIsSubmitted(true);
+    } catch {
+      setSubmitError('通信エラーが発生しました。時間をおいて再度お試しください。');
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -477,18 +518,33 @@ export default function CoachOnboardingDemo() {
                     />
                   </div>
                   <div>
-                    <label htmlFor="coach-title" className="block font-bold text-[#2C2B29] mb-1">
-                      肩書き・競技実績 <span className="text-[#E3644F]">*</span>
+                    <label htmlFor="coach-email" className="block font-bold text-[#2C2B29] mb-1">
+                      ご連絡用メールアドレス <span className="text-[#E3644F]">*</span>
                     </label>
                     <input
-                      id="coach-title"
-                      type="text"
+                      id="coach-email"
+                      type="email"
                       required
-                      value={title}
-                      onChange={(e) => setTitle(e.target.value)}
+                      placeholder="coach@example.com"
+                      value={coachEmail}
+                      onChange={(e) => setCoachEmail(e.target.value)}
                       className="w-full h-11 px-3.5 rounded-xl border border-[#EADBCC] bg-[#FDFBF7] text-xs font-bold text-[#2C2B29] focus:outline-none focus:border-[#E3644F] focus:bg-white"
                     />
                   </div>
+                </div>
+
+                <div>
+                  <label htmlFor="coach-title" className="block font-bold text-[#2C2B29] mb-1">
+                    肩書き・競技実績 <span className="text-[#E3644F]">*</span>
+                  </label>
+                  <input
+                    id="coach-title"
+                    type="text"
+                    required
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    className="w-full h-11 px-3.5 rounded-xl border border-[#EADBCC] bg-[#FDFBF7] text-xs font-bold text-[#2C2B29] focus:outline-none focus:border-[#E3644F] focus:bg-white"
+                  />
                 </div>
 
                 <div>
@@ -810,17 +866,25 @@ export default function CoachOnboardingDemo() {
                   </label>
                 </div>
 
+                {submitError && (
+                  <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-bold">
+                    {submitError}
+                  </div>
+                )}
+
                 <button
                   type="submit"
-                  disabled={!canSubmit}
+                  disabled={!canSubmit || isSubmitting}
                   className="w-full min-h-12 py-3 px-4 rounded-full bg-[#E3644F] hover:bg-[#d05540] text-white font-bold text-xs sm:text-sm flex items-center justify-center transition-colors shadow-sm cursor-pointer disabled:opacity-45 disabled:cursor-not-allowed text-center"
                 >
                   <span>
-                    {canSubmit
-                      ? '登録情報を送信して審査へ進む'
-                      : !isComplianceReady
-                        ? '必須3項目をすべて完了すると審査申請できます'
-                        : 'コーチ利用規約への同意が必要です'}
+                    {isSubmitting
+                      ? '登録申請を送信中...'
+                      : canSubmit
+                        ? '登録情報を送信して審査へ進む'
+                        : !isComplianceReady
+                          ? '必須3項目をすべて完了すると審査申請できます'
+                          : 'コーチ利用規約への同意が必要です'}
                   </span>
                 </button>
               </div>

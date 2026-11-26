@@ -13,6 +13,7 @@ import BookingModal from './BookingModal';
 
 interface BookingCalendarSectionProps {
   coach: Coach;
+  initialSlots?: AvailableSlot[];
 }
 
 type CalendarViewMode = 'list' | 'month';
@@ -58,9 +59,13 @@ function formatYmd(year: number, month: number, day: number): string {
 
 export default function BookingCalendarSection({
   coach,
+  initialSlots,
 }: BookingCalendarSectionProps) {
-  // 月カレンダーでも翌月末まで選択できるよう60日分のスロットを生成
-  const allSlots = useMemo(() => generateMockSlots(coach.id, 60), [coach.id]);
+  // DBから実スロットが渡された場合は優先使用し、未取得時は60日分のスロットを生成
+  const allSlots = useMemo(
+    () => (initialSlots && initialSlots.length > 0 ? initialSlots : generateMockSlots(coach.id, 60)),
+    [coach.id, initialSlots]
+  );
 
   // 日付ごとのサマリー情報をマップ化
   const dateSummaryMap = useMemo(() => {

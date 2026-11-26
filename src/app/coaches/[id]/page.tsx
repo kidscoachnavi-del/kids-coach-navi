@@ -3,6 +3,7 @@ import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { MOCK_COACHES } from '@/data/kids-coach-mock';
+import { fetchCoachByIdWithSlots } from '@/lib/kcn-coaches';
 import KidsCoachNavbar from '@/components/kids-coach/Navbar';
 import CoachProfileHeader from '@/components/kids-coach/CoachProfileHeader';
 import BookingCalendarSection from '@/components/kids-coach/BookingCalendarSection';
@@ -22,7 +23,7 @@ export async function generateMetadata({
   params,
 }: CoachPageProps): Promise<Metadata> {
   const { id } = await params;
-  const coach = MOCK_COACHES.find((c) => c.id === id);
+  const { coach } = await fetchCoachByIdWithSlots(id);
 
   if (!coach) {
     return {
@@ -51,7 +52,7 @@ export async function generateMetadata({
 
 export default async function CoachDetailPage({ params }: CoachPageProps) {
   const { id } = await params;
-  const coach = MOCK_COACHES.find((c) => c.id === id);
+  const { coach, slots } = await fetchCoachByIdWithSlots(id);
 
   if (!coach) {
     notFound();
@@ -114,7 +115,7 @@ export default async function CoachDetailPage({ params }: CoachPageProps) {
           <CoachProfileHeader coach={coach} />
 
           {/* 2. 予約日程カレンダー（直近2週間スロット）＆受講情報入力・決済 */}
-          <BookingCalendarSection coach={coach} />
+          <BookingCalendarSection coach={coach} initialSlots={slots} />
 
           {/* 安心保証バナー */}
           <div className="p-6 rounded-3xl bg-white border border-[#EADBCC] flex items-start gap-4 shadow-xs">
