@@ -764,7 +764,8 @@ export default function CoachDashboardClient({
               </div>
 
               <button
-                onClick={() => setShowServiceModal(true)}
+                type="button"
+                onClick={handleOpenCreateModal}
                 className="w-full sm:w-auto h-11 px-5 rounded-full bg-[#E3644F] hover:bg-[#d05540] text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer whitespace-nowrap"
               >
                 <Plus className="w-4 h-4 shrink-0" strokeWidth={1.75} />
