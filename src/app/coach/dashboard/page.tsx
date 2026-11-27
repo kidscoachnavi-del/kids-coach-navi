@@ -5,17 +5,12 @@ import Link from 'next/link';
 import KidsCoachNavbar from '@/components/kids-coach/Navbar';
 import KidsCoachFooter from '@/components/kids-coach/Footer';
 import {
-  INITIAL_COACH_PROFILE,
-  INITIAL_SERVICES,
-  INITIAL_SLOTS,
-  INITIAL_BOOKINGS,
-} from '@/lib/kids-coach-store';
-import {
   loadDemandRequests,
   aggregateDemandTrends,
   INITIAL_DEMAND_REQUESTS,
 } from '@/lib/demand-requests';
 import {
+  CoachProfile,
   Service,
   ServiceSlot,
   Booking,
@@ -37,23 +32,43 @@ import {
   Sparkles,
 } from 'lucide-react';
 
+function getTomorrowJstYmd(): string {
+  const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000);
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Tokyo',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(tomorrow);
+}
+
+const EMPTY_COACH_PROFILE: CoachProfile = {
+  id: '',
+  display_name: '認定コーチ',
+  title: 'キッズコーチナビ 認定コーチ',
+  avatar_url: '',
+  bio: '',
+  stripe_account_id: '',
+  stripe_payouts_enabled: false,
+  avg_rating: 5.0,
+  total_completed_lessons: 0,
+  created_at: '',
+};
+
 export default function CoachDashboardPage() {
-  const [profile, setProfile] = useState(INITIAL_COACH_PROFILE);
+  const [profile, setProfile] = useState<CoachProfile>(EMPTY_COACH_PROFILE);
+  const [isLoadingDashboard, setIsLoadingDashboard] = useState(true);
+  const [authRequired, setAuthRequired] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [showDemoTools, setShowDemoTools] = useState(
     process.env.NODE_ENV !== 'production'
   );
 
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const params = new URLSearchParams(window.location.search);
-      if (params.get('demo') === '1') setShowDemoTools(true);
-    }
-  }, []);
-  const [services, setServices] = useState<Service[]>(INITIAL_SERVICES);
-  const [slots, setSlots] = useState<ServiceSlot[]>(INITIAL_SLOTS);
-  const [bookings, setBookings] = useState<Booking[]>(INITIAL_BOOKINGS);
+  const [services, setServices] = useState<Service[]>([]);
+  const [slots, setSlots] = useState<ServiceSlot[]>([]);
+  const [bookings, setBookings] = useState<Booking[]>([]);
 
-  // Stripe Connect連携シミュレーション
+  // Stripe Connect連携状態
   const [isConnectingStripe, setIsConnectingStripe] = useState(false);
 
   // レッスン出品モーダル開閉
@@ -66,9 +81,50 @@ export default function CoachDashboardPage() {
   const [newReq, setNewReq] = useState('');
 
   // 空き枠追加用状態
-  const [newSlotDate, setNewSlotDate] = useState('2026-11-17');
+  const [newSlotDate, setNewSlotDate] = useState(getTomorrowJstYmd);
   const [newSlotTime, setNewSlotTime] = useState('10:00');
-  const [selectedServiceForSlot, setSelectedServiceForSlot] = useState(services[0]?.id || '');
+  const [selectedServiceForSlot, setSelectedServiceForSlot] = useState('');
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('demo') === '1') setShowDemoTools(true);
+    }
+
+    const fetchDashboard = async () => {
+      setIsLoadingDashboard(true);
+      setLoadError(null);
+      try {
+        const res = await fetch('/api/kcn/coach/dashboard', { cache: 'no-store' });
+        const data = await res.json();
+        if (res.status === 401) {
+          setAuthRequired(true);
+          setIsLoadingDashboard(false);
+          return;
+        }
+        if (!res.ok) {
+          setLoadError(data?.error || 'ダッシュボードの読み込みに失敗しました。');
+          setIsLoadingDashboard(false);
+          return;
+        }
+        if (data.profile) setProfile(data.profile);
+        if (Array.isArray(data.services)) {
+          setServices(data.services);
+          if (data.services[0]?.id) {
+            setSelectedServiceForSlot(data.services[0].id);
+          }
+        }
+        if (Array.isArray(data.slots)) setSlots(data.slots);
+        if (Array.isArray(data.bookings)) setBookings(data.bookings);
+      } catch {
+        setLoadError('通信エラーが発生しました。再読み込みしてください。');
+      } finally {
+        setIsLoadingDashboard(false);
+      }
+    };
+
+    fetchDashboard();
+  }, []);
 
   // 保護者リクエスト需要ランキング状態
   const [demandTrends, setDemandTrends] = useState(() =>
@@ -95,80 +151,127 @@ export default function CoachDashboardPage() {
     setTimeout(() => setNotification(null), 4000);
   };
 
-  // 1. Stripe Connect Hosted Onboarding 実行
-  const handleStripeConnect = () => {
+  // 1. Stripe Connect Hosted Onboarding 実行（実API連携）
+  const handleStripeConnect = async () => {
+    if (!profile.id) return;
     setIsConnectingStripe(true);
-    setTimeout(() => {
+    try {
+      const res = await fetch('/api/kcn/coach/connect', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          coachId: profile.id,
+          displayName: profile.display_name,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data?.onboardingUrl) {
+        showToast(
+          data?.error ||
+            'Stripe Connect 連携URLの発行に失敗しました（Stripe ダッシュボードの Connect 設定をご確認ください）。'
+        );
+        return;
+      }
+      window.open(data.onboardingUrl, '_blank', 'noopener,noreferrer');
+      showToast('Stripe Connect の本人確認・口座連携画面を開きました。');
+    } catch {
+      showToast('通信エラーが発生しました。時間をおいて再度お試しください。');
+    } finally {
       setIsConnectingStripe(false);
-      setProfile((prev) => ({
-        ...prev,
-        stripe_account_id: 'acct_1MockStripeConnected888',
-        stripe_payouts_enabled: true,
-      }));
-      showToast('Stripe Connect連携が完了しました。本人確認および振込口座が承認されました。');
-    }, 1200);
+    }
   };
 
-  // 2. レッスン商品新規出品
-  const handleCreateService = (e: React.FormEvent) => {
+  // 2. レッスン商品新規出品（Supabase保存）
+  const handleCreateService = async (e: React.FormEvent) => {
     e.preventDefault();
     if (newPrice < 5000) {
       alert('最低料金は5,000円（税込）以上で設定してください。');
       return;
     }
 
-    const created: Service = {
-      id: `srv-${Date.now()}`,
-      coach_id: profile.id,
-      title: newTitle,
-      sport_category: newCategory,
-      target_areas: newAreas.split(/[,、]/).map((s) => s.trim()).filter(Boolean),
-      price: newPrice,
-      duration_minutes: 60,
-      target_ages: '4〜12歳',
-      description: newDesc,
-      requirements: newReq,
-      is_published: true,
-      created_at: new Date().toISOString(),
-      coach: profile,
-    };
+    try {
+      const res = await fetch('/api/kcn/coach/dashboard', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'create_service',
+          coachId: profile.id,
+          title: newTitle,
+          sportCategory: newCategory,
+          targetAreas: newAreas.split(/[,、]/).map((s) => s.trim()).filter(Boolean),
+          price: newPrice,
+          durationMinutes: 60,
+          description: newDesc,
+          requirements: newReq,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data?.service) {
+        showToast(data?.error || 'レッスンの出品に失敗しました。');
+        return;
+      }
 
-    setServices([created, ...services]);
-    setShowServiceModal(false);
-    setNewTitle('');
-    setNewDesc('');
-    setNewReq('');
-    showToast('レッスン商品を出品しました。保護者ポータルに公開されます。');
+      setServices([data.service, ...services]);
+      setSelectedServiceForSlot(data.service.id);
+      setShowServiceModal(false);
+      setNewTitle('');
+      setNewDesc('');
+      setNewReq('');
+      showToast('レッスン商品をSupabaseへ保存し、公開しました。');
+    } catch {
+      showToast('通信エラーが発生しました。');
+    }
   };
 
-  // 3. 空きコマ追加
-  const handleAddSlot = (e: React.FormEvent) => {
+  // 3. 空きコマ追加（Supabase保存）
+  const handleAddSlot = async (e: React.FormEvent) => {
     e.preventDefault();
-    const startTimeStr = `${newSlotDate}T${newSlotTime}:00+09:00`;
-    const [h, m] = newSlotTime.split(':').map(Number);
-    const endH = String(h + 1).padStart(2, '0');
-    const endTimeStr = `${newSlotDate}T${endH}:${String(m).padStart(2, '0')}:00+09:00`;
+    try {
+      const res = await fetch('/api/kcn/coach/dashboard', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'create_slot',
+          coachId: profile.id,
+          serviceId: selectedServiceForSlot || services[0]?.id || '',
+          date: newSlotDate,
+          time: newSlotTime,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data?.slot) {
+        showToast(data?.error || '空き枠の追加に失敗しました。');
+        return;
+      }
 
-    const targetService = services.find((s) => s.id === selectedServiceForSlot) || services[0];
-
-    const newSlot: ServiceSlot = {
-      id: `slot-${Date.now()}`,
-      service_id: targetService.id,
-      coach_id: profile.id,
-      start_time: startTimeStr,
-      end_time: endTimeStr,
-      is_booked: false,
-      service: targetService,
-    };
-
-    setSlots([...slots, newSlot]);
-    showToast(`${newSlotDate} ${newSlotTime} - の空き枠を追加しました。`);
+      setSlots([...slots, data.slot]);
+      if (data.slot.service && !services.some((s) => s.id === data.slot.service.id)) {
+        setServices((prev) => [data.slot.service, ...prev]);
+        setSelectedServiceForSlot(data.slot.service.id);
+      }
+      showToast(`${newSlotDate} ${newSlotTime}〜 の空き枠をSupabaseに公開しました。`);
+    } catch {
+      showToast('通信エラーが発生しました。');
+    }
   };
 
-  // 4. 空きコマ削除
-  const handleDeleteSlot = (slotId: string) => {
-    setSlots(slots.filter((s) => s.id !== slotId));
-    showToast('空きコマを削除しました。');
+  // 4. 空きコマ削除（Supabase削除）
+  const handleDeleteSlot = async (slotId: string) => {
+    try {
+      const res = await fetch(
+        `/api/kcn/coach/dashboard?slotId=${encodeURIComponent(slotId)}&coachId=${encodeURIComponent(profile.id)}`,
+        { method: 'DELETE' }
+      );
+      const data = await res.json();
+      if (!res.ok || !data?.ok) {
+        showToast(data?.error || '空き枠の削除に失敗しました。');
+        return;
+      }
+      setSlots(slots.filter((s) => s.id !== slotId));
+      showToast('空きコマを削除しました。');
+    } catch {
+      showToast('通信エラーが発生しました。');
+    }
   };
 
   // 5. 指導完了報告ボタン（終了時刻経過チェック＋保護者確認/48h保留ステップへ移行）
@@ -248,6 +351,16 @@ export default function CoachDashboardPage() {
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
+              {profile.id && (
+                <Link
+                  href={`/coaches/${profile.id}`}
+                  target="_blank"
+                  className="h-9 px-3.5 rounded-full bg-[#3E8E84] hover:bg-[#32756d] text-white text-xs font-bold inline-flex items-center gap-1.5 transition-colors whitespace-nowrap"
+                >
+                  <ExternalLink className="w-3.5 h-3.5 shrink-0" strokeWidth={1.75} />
+                  <span>公開プロフィール・空き枠を見る</span>
+                </Link>
+              )}
               <Link
                 href="/coach/terms"
                 className="h-9 px-3.5 rounded-full bg-white border border-[#EADBCC] hover:border-[#3E8E84] text-xs font-bold text-[#5E5B54] hover:text-[#3E8E84] inline-flex items-center gap-1.5 transition-colors whitespace-nowrap"
@@ -264,6 +377,32 @@ export default function CoachDashboardPage() {
               </Link>
             </div>
           </div>
+
+          {isLoadingDashboard ? (
+            <div className="bg-white rounded-3xl border border-[#EADBCC] p-8 text-center text-xs font-bold text-[#5E5B54]">
+              ダッシュボード情報を読み込み中です...
+            </div>
+          ) : authRequired ? (
+            <div className="bg-white rounded-3xl border border-[#EADBCC] p-8 text-center space-y-3">
+              <p className="font-heading text-base font-bold text-[#2C2B29]">
+                コーチダッシュボードの利用にはログインが必要です
+              </p>
+              <p className="text-xs text-[#5E5B54]">
+                審査承認されたコーチアカウント（または管理者アカウント）でログインしてください。
+              </p>
+              <Link
+                href="/login?redirectTo=/coach/dashboard"
+                className="inline-flex h-10 px-5 rounded-full bg-[#E3644F] hover:bg-[#d05540] text-white text-xs font-bold items-center gap-1.5"
+              >
+                <span>ログイン画面へ進む</span>
+              </Link>
+            </div>
+          ) : loadError ? (
+            <div className="bg-rose-50 rounded-3xl border border-rose-200 p-6 text-center text-xs font-bold text-rose-700">
+              {loadError}
+            </div>
+          ) : (
+            <>
 
           {/* コーチプロフィール見出しボックス */}
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-white p-4 sm:p-6 rounded-3xl border border-[#EADBCC] shadow-xs">
@@ -750,6 +889,8 @@ export default function CoachDashboardPage() {
               })}
             </div>
           </div>
+            </>
+          )}
         </div>
       </main>
 
