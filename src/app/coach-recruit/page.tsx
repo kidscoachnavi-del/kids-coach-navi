@@ -90,7 +90,7 @@ export default function CoachRecruitPage() {
                         <p className="text-xs font-bold tracking-[0.2em] text-[#0D9488] uppercase">
                             COACH RECRUITMENT
                         </p>
-                        <span className="inline-flex items-center gap-1.5 rounded-full border border-[#0D9488]/30 bg-[#0D9488]/10 px-3.5 py-1 text-xs font-bold text-[#0F766E]">
+                        <span className="inline-flex max-w-full items-center justify-center gap-1.5 rounded-xl sm:rounded-full border border-[#0D9488]/30 bg-[#0D9488]/10 px-3.5 py-1.5 text-[11px] sm:text-xs font-bold text-[#0F766E] text-center">
                             <ShieldCheck className="h-3.5 w-3.5 shrink-0" />
                             <span>水泳・かけっこ・体育対策｜初期パートナー募集中</span>
                         </span>
@@ -113,7 +113,7 @@ export default function CoachRecruitPage() {
                     <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
                         <a
                             href={ONBOARDING_URL}
-                            className="w-full sm:w-auto px-6 sm:px-8 py-3.5 sm:py-4 rounded-full bg-[#F26B5B] hover:bg-[#E05A4A] text-white font-bold text-xs sm:text-sm shadow-sm transition-colors whitespace-nowrap inline-flex items-center justify-center gap-2"
+                            className="w-full sm:w-auto max-w-full px-4 sm:px-8 py-3.5 sm:py-4 rounded-full bg-[#F26B5B] hover:bg-[#E05A4A] text-white font-bold text-xs sm:text-sm shadow-sm transition-colors whitespace-nowrap inline-flex items-center justify-center gap-2"
                         >
                             <span>認定コーチ登録へ進む（無料）</span>
                             <ArrowRight className="h-4 w-4 shrink-0" />
@@ -130,7 +130,9 @@ export default function CoachRecruitPage() {
                             WHY KIDS COACH NAVI
                         </p>
                         <h2 className="text-xl sm:text-2xl font-extrabold text-[#1C1917]">
-                            キッズコーチナビで教える3つのメリット
+                            キッズコーチナビで教える
+                            <br className="sm:hidden" />
+                            3つのメリット
                         </h2>
                     </div>
 
@@ -221,7 +223,7 @@ export default function CoachRecruitPage() {
                     <div className="pt-1 flex justify-center">
                         <a
                             href={ONBOARDING_URL}
-                            className="w-full sm:w-auto px-6 sm:px-10 py-4 rounded-full bg-[#F26B5B] hover:bg-[#E05A4A] text-white font-bold text-xs sm:text-sm shadow-sm transition-colors whitespace-nowrap inline-flex items-center justify-center gap-2"
+                            className="w-full sm:w-auto max-w-full px-4 sm:px-10 py-4 rounded-full bg-[#F26B5B] hover:bg-[#E05A4A] text-white font-bold text-xs sm:text-sm shadow-sm transition-colors whitespace-nowrap inline-flex items-center justify-center gap-2"
                         >
                             <span>認定コーチ登録・審査へ進む</span>
                             <ArrowRight className="h-4 w-4 shrink-0" />

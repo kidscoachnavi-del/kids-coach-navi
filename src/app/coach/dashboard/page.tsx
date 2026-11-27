@@ -288,10 +288,10 @@ export default function CoachDashboardPage() {
               </div>
             </div>
 
-            {/* 手数料率バッジ（スマホは横1行バー、PCは右寄せボックス） */}
-            <div className="bg-[#FDFBF7] px-3.5 py-2.5 sm:p-3.5 rounded-2xl border border-[#EADBCC] w-full lg:w-auto flex items-center justify-between lg:block lg:text-right text-xs shrink-0">
-              <span className="text-[10px] text-[#5E5B54] font-bold block">手数料配分ルール</span>
-              <div className="font-bold text-[#2C2B29] whitespace-nowrap">
+            {/* 手数料率バッジ（スマホは縦積み、PCは右寄せボックス） */}
+            <div className="bg-[#FDFBF7] px-3.5 py-2.5 sm:p-3.5 rounded-2xl border border-[#EADBCC] w-full lg:w-auto flex flex-col sm:flex-row sm:items-center justify-between gap-1 lg:block lg:text-right text-xs shrink-0">
+              <span className="text-[10px] text-[#5E5B54] font-bold block whitespace-nowrap">手数料配分ルール</span>
+              <div className="font-bold text-[#2C2B29] sm:whitespace-nowrap">
                 コーチ受取 <span className="font-en text-[#E3644F] font-extrabold text-sm sm:text-base">75%</span> / SWIM PARTNERS 25%
               </div>
             </div>
@@ -619,9 +619,9 @@ export default function CoachDashboardPage() {
                     </div>
                   </div>
 
-                  <div className="pt-3 border-t border-[#EADBCC] mt-4 flex items-center justify-between text-xs">
-                    <span className="text-[#3E8E84] font-bold text-[11px] inline-flex items-center gap-1.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#3E8E84]" />
+                  <div className="pt-3 border-t border-[#EADBCC] mt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 text-xs">
+                    <span className="text-[#3E8E84] font-bold text-[11px] inline-flex items-center gap-1.5 whitespace-nowrap">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#3E8E84] shrink-0" />
                       <span>公開中（ポータル掲載）</span>
                     </span>
                     <span className="text-[#5E5B54] font-bold">
