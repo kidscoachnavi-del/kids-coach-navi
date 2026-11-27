@@ -31,6 +31,7 @@ import {
   Lock,
   Sparkles,
   ChevronDown,
+  Pencil,
 } from 'lucide-react';
 
 function getTomorrowJstYmd(): string {
@@ -72,8 +73,9 @@ export default function CoachDashboardPage() {
   // Stripe Connect連携状態
   const [isConnectingStripe, setIsConnectingStripe] = useState(false);
 
-  // レッスン出品モーダル開閉
+  // レッスン出品/編集モーダル開閉
   const [showServiceModal, setShowServiceModal] = useState(false);
+  const [editingServiceId, setEditingServiceId] = useState<string | null>(null);
   const [newTitle, setNewTitle] = useState('');
   const [newCategory, setNewCategory] = useState('かけっこ・走り方');
   const [newAreas, setNewAreas] = useState('世田谷区、目黒区、駒沢公園周辺');
@@ -138,6 +140,7 @@ export default function CoachDashboardPage() {
 
   /** 需要ランキングから新規出品モーダルをプリセットして開く */
   const handleCreateFromDemand = (sportName: string, areaName: string) => {
+    setEditingServiceId(null);
     setNewTitle(`【${areaName}】${sportName} マンツーマン指導 60分`);
     setNewCategory(sportName);
     setNewAreas(areaName);
@@ -182,7 +185,29 @@ export default function CoachDashboardPage() {
     }
   };
 
-  // 2. レッスン商品新規出品（Supabase保存）
+  // 2. レッスン商品新規出品・編集（Supabase保存）
+  const handleOpenCreateModal = () => {
+    setEditingServiceId(null);
+    setNewTitle('');
+    setNewCategory('かけっこ・走り方');
+    setNewAreas('世田谷区、目黒区、駒沢公園周辺');
+    setNewPrice(6500);
+    setNewDesc('');
+    setNewReq('');
+    setShowServiceModal(true);
+  };
+
+  const handleOpenEditModal = (srv: Service) => {
+    setEditingServiceId(srv.id);
+    setNewTitle(srv.title);
+    setNewCategory(srv.sport_category);
+    setNewAreas((srv.target_areas || []).join('、'));
+    setNewPrice(srv.price);
+    setNewDesc(srv.description || '');
+    setNewReq(srv.requirements || '');
+    setShowServiceModal(true);
+  };
+
   const handleCreateService = async (e: React.FormEvent) => {
     e.preventDefault();
     if (newPrice < 5000) {
@@ -191,11 +216,12 @@ export default function CoachDashboardPage() {
     }
 
     try {
+      const isEdit = Boolean(editingServiceId);
       const res = await fetch('/api/kcn/coach/dashboard', {
-        method: 'POST',
+        method: isEdit ? 'PATCH' : 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          action: 'create_service',
+          ...(isEdit ? { serviceId: editingServiceId } : { action: 'create_service' }),
           coachId: profile.id,
           title: newTitle,
           sportCategory: newCategory,
@@ -208,17 +234,48 @@ export default function CoachDashboardPage() {
       });
       const data = await res.json();
       if (!res.ok || !data?.service) {
-        showToast(data?.error || 'レッスンの出品に失敗しました。');
+        showToast(data?.error || 'レッスンの保存に失敗しました。');
         return;
       }
 
-      setServices([data.service, ...services]);
-      setSelectedServiceForSlot(data.service.id);
+      if (isEdit) {
+        setServices((prev) =>
+          prev.map((s) => (s.id === data.service.id ? data.service : s))
+        );
+        showToast('レッスン商品を更新しました。');
+      } else {
+        setServices([data.service, ...services]);
+        setSelectedServiceForSlot(data.service.id);
+        showToast('レッスン商品をSupabaseへ保存し、公開しました。');
+      }
+
       setShowServiceModal(false);
+      setEditingServiceId(null);
       setNewTitle('');
       setNewDesc('');
       setNewReq('');
-      showToast('レッスン商品をSupabaseへ保存し、公開しました。');
+    } catch {
+      showToast('通信エラーが発生しました。');
+    }
+  };
+
+  const handleDeleteService = async (serviceId: string) => {
+    if (!window.confirm('このレッスン商品を削除しますか？（紐づく未予約の空き枠も削除されます）')) {
+      return;
+    }
+    try {
+      const res = await fetch(
+        `/api/kcn/coach/dashboard?serviceId=${encodeURIComponent(serviceId)}&coachId=${encodeURIComponent(profile.id)}`,
+        { method: 'DELETE' }
+      );
+      const data = await res.json();
+      if (!res.ok || !data?.ok) {
+        showToast(data?.error || 'レッスン商品の削除に失敗しました。');
+        return;
+      }
+      setServices((prev) => prev.filter((s) => s.id !== serviceId));
+      setSlots((prev) => prev.filter((s) => s.service_id !== serviceId));
+      showToast('レッスン商品を削除しました。');
     } catch {
       showToast('通信エラーが発生しました。');
     }
@@ -759,14 +816,45 @@ export default function CoachDashboardPage() {
                     </div>
                   </div>
 
-                  <div className="pt-3 border-t border-[#EADBCC] mt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 text-xs">
-                    <span className="text-[#3E8E84] font-bold text-[11px] inline-flex items-center gap-1.5 whitespace-nowrap">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#3E8E84] shrink-0" />
-                      <span>公開中（ポータル掲載）</span>
-                    </span>
-                    <span className="text-[#5E5B54] font-bold">
-                      対象: {srv.target_ages}
-                    </span>
+                  <div className="pt-3 border-t border-[#EADBCC] mt-4 space-y-2.5 text-xs">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5">
+                      <span className="text-[#3E8E84] font-bold text-[11px] inline-flex items-center gap-1.5 whitespace-nowrap">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#3E8E84] shrink-0" />
+                        <span>公開中（ポータル掲載）</span>
+                      </span>
+                      <span className="text-[#5E5B54] font-bold">
+                        対象: {srv.target_ages}
+                      </span>
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-2 pt-1">
+                      {profile.id && (
+                        <Link
+                          href={`/coaches/${profile.id}`}
+                          target="_blank"
+                          className="h-8 px-3 rounded-full bg-white border border-[#EADBCC] hover:border-[#3E8E84] text-[#3E8E84] text-[11px] font-bold inline-flex items-center gap-1 transition-colors"
+                        >
+                          <ExternalLink className="w-3 h-3 shrink-0" strokeWidth={1.75} />
+                          <span>ページ確認</span>
+                        </Link>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => handleOpenEditModal(srv)}
+                        className="h-8 px-3 rounded-full bg-white border border-[#EADBCC] hover:border-[#2C2B29] text-[#2C2B29] text-[11px] font-bold inline-flex items-center gap-1 transition-colors cursor-pointer"
+                      >
+                        <Pencil className="w-3 h-3 shrink-0" strokeWidth={1.75} />
+                        <span>編集</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteService(srv.id)}
+                        className="h-8 px-3 rounded-full bg-white border border-rose-200 hover:bg-rose-50 text-rose-600 text-[11px] font-bold inline-flex items-center gap-1 transition-colors cursor-pointer"
+                      >
+                        <Trash2 className="w-3 h-3 shrink-0" strokeWidth={1.75} />
+                        <span>削除</span>
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -912,9 +1000,14 @@ export default function CoachDashboardPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#2C2B29]/60 backdrop-blur-xs overflow-y-auto">
           <div className="bg-[#FDFBF7] w-full max-w-lg rounded-3xl shadow-2xl border border-[#EADBCC] overflow-hidden my-8">
             <div className="p-5 bg-[#2C2B29] text-white flex items-center justify-between">
-              <h3 className="font-heading font-bold text-base">レッスン商品の新規出品</h3>
+              <h3 className="font-heading font-bold text-base">
+                {editingServiceId ? 'レッスン商品の編集' : 'レッスン商品の新規出品'}
+              </h3>
               <button
-                onClick={() => setShowServiceModal(false)}
+                onClick={() => {
+                  setShowServiceModal(false);
+                  setEditingServiceId(null);
+                }}
                 className="text-white/80 hover:text-white p-1 cursor-pointer"
               >
                 <X className="w-5 h-5" strokeWidth={1.75} />
@@ -1040,7 +1133,7 @@ export default function CoachDashboardPage() {
                   type="submit"
                   className="w-full h-12 rounded-full bg-[#E3644F] hover:bg-[#d05540] text-white font-bold text-sm transition-colors shadow-sm cursor-pointer"
                 >
-                  この内容で出品する
+                  {editingServiceId ? 'この内容で更新する' : 'この内容で出品する'}
                 </button>
               </div>
             </form>

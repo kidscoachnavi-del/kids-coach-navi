@@ -274,14 +274,84 @@ export async function POST(req: NextRequest) {
 }
 
 /**
- * 未予約の空き枠削除 API (DELETE /api/kcn/coach/dashboard?slotId=...)
+ * レッスン商品更新 API (PATCH /api/kcn/coach/dashboard)
+ */
+export async function PATCH(req: NextRequest) {
+  try {
+    const body = await req.json();
+    const serviceId = typeof body?.serviceId === 'string' ? body.serviceId : '';
+    if (!serviceId) {
+      return NextResponse.json({ error: 'serviceId が必要です。' }, { status: 400 });
+    }
+
+    const resolved = await resolveCoachId(body?.coachId);
+    if ('error' in resolved) {
+      return NextResponse.json({ error: resolved.error }, { status: resolved.status });
+    }
+
+    const title = typeof body.title === 'string' ? body.title.trim() : '';
+    const sportCategory =
+      typeof body.sportCategory === 'string' ? body.sportCategory.trim() : 'かけっこ・走り方';
+    const targetAreas = Array.isArray(body.targetAreas)
+      ? body.targetAreas.filter((a: unknown): a is string => typeof a === 'string' && a.trim().length > 0)
+      : [];
+    const price = Number(body.price);
+    const description =
+      typeof body.description === 'string' ? body.description.trim() : '';
+    const requirements =
+      typeof body.requirements === 'string' ? body.requirements.trim() : '';
+
+    if (!title || !description || Number.isNaN(price) || price < 5000) {
+      return NextResponse.json(
+        { error: 'レッスン名・内容・料金（5,000円以上）を正しく入力してください。' },
+        { status: 400 }
+      );
+    }
+
+    const admin = createAdminClient();
+    const { data: updated, error } = await admin
+      .from('kcn_services')
+      .update({
+        title,
+        sport_category: sportCategory,
+        target_areas: targetAreas,
+        price,
+        description,
+        requirements,
+      })
+      .eq('id', serviceId)
+      .eq('coach_id', resolved.coachProfile.id)
+      .select('*')
+      .single();
+
+    if (error || !updated) {
+      console.error('update_service error:', error);
+      return NextResponse.json(
+        { error: 'レッスン商品の更新に失敗しました。' },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json({ ok: true, service: updated });
+  } catch (err) {
+    console.error('PATCH /api/kcn/coach/dashboard error:', err);
+    return NextResponse.json(
+      { error: 'データの更新中にエラーが発生しました。' },
+      { status: 500 }
+    );
+  }
+}
+
+/**
+ * 未予約の空き枠・レッスン商品削除 API (DELETE /api/kcn/coach/dashboard?slotId=... | ?serviceId=...)
  */
 export async function DELETE(req: NextRequest) {
   try {
     const slotId = req.nextUrl.searchParams.get('slotId');
+    const serviceId = req.nextUrl.searchParams.get('serviceId');
     const coachIdParam = req.nextUrl.searchParams.get('coachId');
-    if (!slotId) {
-      return NextResponse.json({ error: 'slotId が必要です。' }, { status: 400 });
+    if (!slotId && !serviceId) {
+      return NextResponse.json({ error: 'slotId または serviceId が必要です。' }, { status: 400 });
     }
 
     const resolved = await resolveCoachId(coachIdParam);
@@ -290,11 +360,42 @@ export async function DELETE(req: NextRequest) {
     }
 
     const admin = createAdminClient();
+    const coachId = resolved.coachProfile.id;
+
+    if (serviceId) {
+      const { count } = await admin
+        .from('kcn_bookings')
+        .select('id', { count: 'exact', head: true })
+        .eq('service_id', serviceId);
+
+      if ((count ?? 0) > 0) {
+        return NextResponse.json(
+          { error: '予約履歴があるレッスン商品は削除できません。' },
+          { status: 400 }
+        );
+      }
+
+      const { error } = await admin
+        .from('kcn_services')
+        .delete()
+        .eq('id', serviceId)
+        .eq('coach_id', coachId);
+
+      if (error) {
+        return NextResponse.json(
+          { error: 'レッスン商品の削除に失敗しました。' },
+          { status: 400 }
+        );
+      }
+
+      return NextResponse.json({ ok: true });
+    }
+
     const { error } = await admin
       .from('kcn_service_slots')
       .delete()
-      .eq('id', slotId)
-      .eq('coach_id', resolved.coachProfile.id)
+      .eq('id', slotId!)
+      .eq('coach_id', coachId)
       .eq('is_booked', false);
 
     if (error) {
