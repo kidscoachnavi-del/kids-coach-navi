@@ -59,9 +59,10 @@ export async function login(prevState: any, formData: FormData) {
     // Clear cache specifically for dashboard layouts to ensure fresh profile data
     revalidatePath('/admin/kcn', 'page')
     revalidatePath('/coach/dashboard', 'page')
+    revalidatePath('/chat', 'page')
 
     let targetUrl = redirectTo
-    if (!targetUrl || !targetUrl.startsWith('/')) {
+    if (!targetUrl || !targetUrl.startsWith('/') || targetUrl.startsWith('//')) {
         targetUrl = role === 'admin' ? '/admin/kcn' : '/coach/dashboard'
     }
 
