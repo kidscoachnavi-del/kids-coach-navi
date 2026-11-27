@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { resolveAndFetchCoachDashboard } from '@/lib/kcn-coach-dashboard';
 
 /**
  * 現在のログインユーザーから対象コーチIDを解決する
@@ -66,48 +67,12 @@ async function resolveCoachId(requestedCoachId?: string | null) {
  * コーチダッシュボードデータ取得 API (GET /api/kcn/coach/dashboard)
  */
 export async function GET(req: NextRequest) {
-  try {
-    const coachIdParam = req.nextUrl.searchParams.get('coachId');
-    const resolved = await resolveCoachId(coachIdParam);
-    if ('error' in resolved) {
-      return NextResponse.json({ error: resolved.error }, { status: resolved.status });
-    }
-
-    const admin = createAdminClient();
-    const coachId = resolved.coachProfile.id;
-
-    const [{ data: services }, { data: slots }, { data: bookings }] =
-      await Promise.all([
-        admin
-          .from('kcn_services')
-          .select('*')
-          .eq('coach_id', coachId)
-          .order('created_at', { ascending: false }),
-        admin
-          .from('kcn_service_slots')
-          .select('*, service:kcn_services(*)')
-          .eq('coach_id', coachId)
-          .order('start_time', { ascending: true }),
-        admin
-          .from('kcn_bookings')
-          .select('*, service:kcn_services(*), slot:kcn_service_slots(*)')
-          .eq('coach_id', coachId)
-          .order('created_at', { ascending: false }),
-      ]);
-
-    return NextResponse.json({
-      profile: resolved.coachProfile,
-      services: services || [],
-      slots: slots || [],
-      bookings: bookings || [],
-    });
-  } catch (err) {
-    console.error('GET /api/kcn/coach/dashboard error:', err);
-    return NextResponse.json(
-      { error: 'ダッシュボード情報の取得に失敗しました。' },
-      { status: 500 }
-    );
+  const coachIdParam = req.nextUrl.searchParams.get('coachId');
+  const result = await resolveAndFetchCoachDashboard(coachIdParam);
+  if (!result.ok) {
+    return NextResponse.json({ error: result.error }, { status: result.status });
   }
+  return NextResponse.json(result.data);
 }
 
 /**
