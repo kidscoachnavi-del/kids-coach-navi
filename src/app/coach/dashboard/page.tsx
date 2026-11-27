@@ -30,6 +30,7 @@ import {
   TrendingUp,
   Lock,
   Sparkles,
+  ChevronDown,
 } from 'lucide-react';
 
 function getTomorrowJstYmd(): string {
@@ -823,18 +824,30 @@ export default function CoachDashboardPage() {
                 <label htmlFor="slot-service" className="block text-[11px] font-bold text-[#2C2B29] mb-1">
                   適用するレッスン商品
                 </label>
-                <select
-                  id="slot-service"
-                  value={selectedServiceForSlot}
-                  onChange={(e) => setSelectedServiceForSlot(e.target.value)}
-                  className="w-full h-10 px-3 rounded-xl border border-[#EADBCC] text-xs font-bold text-[#2C2B29] bg-white"
-                >
-                  {services.map((s) => (
-                    <option key={s.id} value={s.id}>
-                      {s.sport_category}: {s.title.slice(0, 16)}...
-                    </option>
-                  ))}
-                </select>
+                <div className="relative">
+                  <select
+                    id="slot-service"
+                    value={selectedServiceForSlot}
+                    onChange={(e) => setSelectedServiceForSlot(e.target.value)}
+                    style={{
+                      WebkitAppearance: 'none',
+                      MozAppearance: 'none',
+                      appearance: 'none',
+                      backgroundImage: 'none',
+                    }}
+                    className="w-full h-10 pl-3 pr-9 py-2 rounded-xl border border-[#EADBCC] text-xs font-bold text-[#2C2B29] bg-white leading-normal appearance-none cursor-pointer focus:outline-none focus:border-[#E3644F]"
+                  >
+                    {services.map((s) => (
+                      <option key={s.id} value={s.id}>
+                        {s.sport_category}: {s.title.slice(0, 16)}...
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown
+                    className="w-4 h-4 text-[#5E5B54] pointer-events-none absolute right-3 top-1/2 -translate-y-1/2"
+                    strokeWidth={1.75}
+                  />
+                </div>
               </div>
 
               <div>
@@ -929,25 +942,37 @@ export default function CoachDashboardPage() {
                   <label htmlFor="service-cat" className="block font-bold text-[#2C2B29] mb-1">
                     種目カテゴリー
                   </label>
-                  <select
-                    id="service-cat"
-                    value={newCategory}
-                    onChange={(e) => setNewCategory(e.target.value)}
-                    className="w-full h-11 px-3 rounded-xl border border-[#EADBCC] text-xs font-bold text-[#2C2B29] bg-white"
-                  >
-                    <option value="かけっこ・走り方">かけっこ・走り方</option>
-                    <option value="水泳・息継ぎ">水泳・息継ぎ</option>
-                    <option value="鉄棒・逆上がり">鉄棒・逆上がり</option>
-                    <option value="なわとび・二重跳び">なわとび・二重跳び</option>
-                    {![
-                      'かけっこ・走り方',
-                      '水泳・息継ぎ',
-                      '鉄棒・逆上がり',
-                      'なわとび・二重跳び',
-                    ].includes(newCategory) && (
-                      <option value={newCategory}>{newCategory}</option>
-                    )}
-                  </select>
+                  <div className="relative">
+                    <select
+                      id="service-cat"
+                      value={newCategory}
+                      onChange={(e) => setNewCategory(e.target.value)}
+                      style={{
+                        WebkitAppearance: 'none',
+                        MozAppearance: 'none',
+                        appearance: 'none',
+                        backgroundImage: 'none',
+                      }}
+                      className="w-full h-11 pl-3 pr-9 py-2.5 rounded-xl border border-[#EADBCC] text-xs font-bold text-[#2C2B29] bg-white leading-normal appearance-none cursor-pointer focus:outline-none focus:border-[#E3644F]"
+                    >
+                      <option value="かけっこ・走り方">かけっこ・走り方</option>
+                      <option value="水泳・息継ぎ">水泳・息継ぎ</option>
+                      <option value="鉄棒・逆上がり">鉄棒・逆上がり</option>
+                      <option value="なわとび・二重跳び">なわとび・二重跳び</option>
+                      {![
+                        'かけっこ・走り方',
+                        '水泳・息継ぎ',
+                        '鉄棒・逆上がり',
+                        'なわとび・二重跳び',
+                      ].includes(newCategory) && (
+                        <option value={newCategory}>{newCategory}</option>
+                      )}
+                    </select>
+                    <ChevronDown
+                      className="w-4 h-4 text-[#5E5B54] pointer-events-none absolute right-3 top-1/2 -translate-y-1/2"
+                      strokeWidth={1.75}
+                    />
+                  </div>
                 </div>
 
                 <div>
