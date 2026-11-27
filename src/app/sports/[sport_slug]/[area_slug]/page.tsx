@@ -8,12 +8,13 @@ import DemandRequestCard from '@/components/kids-coach/DemandRequestCard';
 import KidsCoachFooter from '@/components/kids-coach/Footer';
 import JsonLd from '@/components/kids-coach/JsonLd';
 import { fetchApprovedCoachesWithSlots } from '@/lib/kcn-coaches';
+import { filterCoachesForSportAndArea } from '@/lib/kcn-sport-matching';
 import {
   SPORT_CATEGORIES,
   AREA_LIST,
   SPORT_VISUALS,
 } from '@/data/kids-coach-mock';
-import { ChevronRight, MapPin, Check } from 'lucide-react';
+import { ChevronRight, MapPin, Check, ArrowRight } from 'lucide-react';
 
 interface SportAreaPageProps {
   params: Promise<{
@@ -37,7 +38,7 @@ export async function generateMetadata({
 
   return {
     title: `【${area.name}】子ども向け${category.name}の出張マンツーマン指導 | キッズコーチナビ`,
-    description: `${area.prefecture}${area.name}で受けられる子ども向け${category.name}の出張レッスン。公園や個人指導可能な施設へプロコーチが出張。入会金・月会費なしの都度払い。運営：SWIM PARTNERS。`,
+    description: `${area.prefecture}${area.name}で受けられる子ども向け${category.name}の出張レッスン。ご希望の駅・エリア周辺での個別指導に対応。入会金・月会費なしの都度払い。運営：SWIM PARTNERS。`,
   };
 }
 
@@ -50,21 +51,12 @@ export default async function SportAreaPage({ params }: SportAreaPageProps) {
     notFound();
   }
 
-  // 該当種目 ＆ 該当エリアのコーチを抽出（承認済みDB実データのみ）
+  // 該当種目 ＆ 該当エリアのコーチを厳密に抽出（承認済みDB実データのみ・他エリアへのフォールバックなし）
   const { coaches: allCoaches, slots: allSlots } = await fetchApprovedCoachesWithSlots();
-  let coaches = allCoaches.filter(
-    (c) =>
-      (c.sportsSlugs.includes(sport_slug) || c.sports.some((s) => s.includes(category.name.slice(0, 2)))) &&
-      (c.areaSlugs.includes(area_slug) || c.areas.some((a) => a.includes(area.name)))
+  const coaches = filterCoachesForSportAndArea(allCoaches, sport_slug, area);
+  const hasAvailableSlots = coaches.some((coach) =>
+    allSlots.some((slot) => slot.coachId === coach.id && slot.status === 'available')
   );
-
-  if (coaches.length === 0) {
-    coaches = allCoaches.filter(
-      (c) =>
-        c.sportsSlugs.includes(sport_slug) ||
-        c.sports.some((s) => s.includes(category.name.slice(0, 2)))
-    );
-  }
 
   // 構造化データ（LocalBusiness + Service 複合）
   const localBusinessJsonLd = {
@@ -97,7 +89,7 @@ export default async function SportAreaPage({ params }: SportAreaPageProps) {
       itemOffered: {
         '@type': 'Service',
         name: `${area.name}での子ども向け${category.name}マンツーマン指導`,
-        description: `${area.parks.join('、')}等での出張個人指導。`,
+        description: `${area.prefecture}${area.name}（${area.stationAreas.join('・')}）を中心とした出張個人指導。`,
       },
     },
   };
@@ -124,7 +116,7 @@ export default async function SportAreaPage({ params }: SportAreaPageProps) {
             </span>
           </nav>
 
-          {/* 近隣エリアクイック切替バー */}
+          {/* 近隣エリアクイック切替バー（SSoT：東京都内5区のみ） */}
           <div className="flex flex-wrap items-center gap-2">
             {AREA_LIST.map((item) => {
               const active = item.slug === area.slug;
@@ -158,9 +150,15 @@ export default async function SportAreaPage({ params }: SportAreaPageProps) {
                       <MapPin className="w-3.5 h-3.5 text-[#E3644F]" strokeWidth={1.75} />
                       <span>{area.prefecture} {area.name}</span>
                     </span>
-                    <span className="text-xs font-bold text-[#3E8E84] bg-[#3E8E84]/10 px-2.5 py-1 rounded-full">
-                      空き枠・日程相談受付中
-                    </span>
+                    {coaches.length > 0 ? (
+                      <span className="text-xs font-bold text-[#3E8E84] bg-[#3E8E84]/10 px-2.5 py-1 rounded-full">
+                        {hasAvailableSlots ? '空き枠・日程相談受付中' : '日程相談受付中'}
+                      </span>
+                    ) : (
+                      <span className="text-xs font-bold text-[#5E5B54] bg-[#F3EFE8] px-2.5 py-1 rounded-full">
+                        認定コーチ募集中・順次拡大中
+                      </span>
+                    )}
                   </div>
 
                   <h1 className="font-heading tracking-tight mb-4 space-y-1">
@@ -173,26 +171,26 @@ export default async function SportAreaPage({ params }: SportAreaPageProps) {
                   </h1>
 
                   <p className="text-xs sm:text-sm text-[#5E5B54] leading-relaxed mb-6">
-                    {area.name}内の公園や個人指導が許可されているスポーツ施設など、ご希望の場所へコーチが出張してマンツーマンで指導します。入会金・月会費なしの都度払いで、1回から気軽に始められます。
+                    {area.prefecture}{area.name}内のご希望エリアにて、認定コーチが出張してマンツーマンで指導します。具体的な実施場所は利用条件を確認のうえチャットで調整でき、入会金・月会費なしの都度払いで1回から気軽に始められます。
                   </p>
 
-                  {/* 指導可能スポット例一覧 */}
+                  {/* 対応駅・エリア目安一覧（SSoT：施設名ではなく区・駅エリア表記） */}
                   <div className="bg-[#FDFBF7] p-4 rounded-2xl border border-[#EADBCC] mb-6 space-y-2">
                     <span className="text-[11px] font-bold text-[#5E5B54] flex items-center gap-1.5">
                       <MapPin className="w-3.5 h-3.5 text-[#3E8E84]" strokeWidth={1.75} />
-                      <span>{area.name}周辺の主なスポット例（施設により利用条件が異なります）:</span>
+                      <span>{area.name}の主な対応駅・エリア目安（具体的な実施場所はご希望に合わせて調整）:</span>
                     </span>
                     <div className="flex flex-wrap gap-2">
-                      {area.parks.map((park, i) => (
+                      {area.stationAreas.map((stationArea, i) => (
                         <span
                           key={i}
                           className="text-xs font-bold px-3 py-1 rounded-full bg-white text-[#2C2B29] border border-[#EADBCC]"
                         >
-                          {park}
+                          {stationArea}
                         </span>
                       ))}
                       <span className="text-xs text-[#5E5B54] self-center">
-                        ※その他、実施可能な近隣施設もチャットで相談できます
+                        ※具体的な実施場所はご予約時のチャットにて、ご希望エリア・利用条件に合わせてご相談いただけます
                       </span>
                     </div>
                   </div>
@@ -235,7 +233,9 @@ export default async function SportAreaPage({ params }: SportAreaPageProps) {
                   {area.name}に対応可能な{category.name}コーチ（{coaches.length}名）
                 </h2>
                 <p className="text-xs text-[#5E5B54] mt-1">
-                  空き枠を確認してコーチと日程調整をご相談いただけます（決定後のカード事前決済）。
+                  {coaches.length > 0
+                    ? '空き枠を確認してコーチと日程調整をご相談いただけます（決定後のカード事前決済）。'
+                    : '現在、当エリアの担当コーチを順次募集・審査しています。'}
                 </p>
               </div>
               <Link
@@ -267,8 +267,22 @@ export default async function SportAreaPage({ params }: SportAreaPageProps) {
                 </div>
               )
             ) : (
-              <div className="p-8 text-center text-[#5E5B54] bg-white rounded-3xl border border-[#EADBCC] text-xs">
-                現在このエリアの空き枠を順次拡大中です。下記フォームよりご希望をお寄せください。
+              <div className="p-8 text-center text-[#5E5B54] bg-white rounded-3xl border border-[#EADBCC] text-xs space-y-3">
+                <p className="font-bold text-[#2C2B29]">
+                  現在、{area.name}で{category.name}を担当できる認定コーチを順次募集・審査中です。
+                </p>
+                <p>
+                  下記リクエストフォームよりご希望をお寄せいただくと、対応コーチが登録され次第優先的にご案内します。
+                </p>
+                <div>
+                  <Link
+                    href="/coach-recruit"
+                    className="inline-flex items-center gap-1.5 text-xs font-bold text-[#3E8E84] hover:text-[#2C6B63] underline underline-offset-4"
+                  >
+                    <span>指導経験のある方へ：初期パートナーコーチ募集を見る</span>
+                    <ArrowRight className="w-3.5 h-3.5" strokeWidth={1.75} />
+                  </Link>
+                </div>
               </div>
             )}
           </div>

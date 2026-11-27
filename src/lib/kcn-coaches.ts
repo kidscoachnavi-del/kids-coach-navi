@@ -2,31 +2,17 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import {
   Coach,
   AvailableSlot,
-  SPORT_CATEGORIES,
-  AREA_LIST,
+  PublishedCoachService,
 } from '@/data/kids-coach-mock';
+import {
+  hasSwimmingEvidence,
+  mapAreaToSlugs,
+  mapSportLabelToSlug,
+  mapSportToSlugs,
+  sanitizeCoachAreas,
+} from '@/lib/kcn-sport-matching';
 
 const WEEKDAYS = ['日', '月', '火', '水', '木', '金', '土'];
-
-function mapSportToSlugs(sports: string[]): string[] {
-  return sports
-    .map((s) => {
-      const found = SPORT_CATEGORIES.find(
-        (cat) => s.includes(cat.name.slice(0, 2)) || cat.slug === s
-      );
-      return found?.slug;
-    })
-    .filter((v): v is string => Boolean(v));
-}
-
-function mapAreaToSlugs(areas: string[]): string[] {
-  return areas
-    .map((a) => {
-      const found = AREA_LIST.find((area) => a.includes(area.name) || area.slug === a);
-      return found?.slug;
-    })
-    .filter((v): v is string => Boolean(v));
-}
 
 function toAvailableSlot(row: {
   id: string;
@@ -79,7 +65,9 @@ export async function fetchApprovedCoachesWithSlots(): Promise<{
           .order('created_at', { ascending: false }),
         supabase
           .from('kcn_services')
-          .select('id, coach_id, price, duration_minutes, target_ages, is_published')
+          .select(
+            'id, coach_id, title, sport_category, description, target_areas, price, duration_minutes, target_ages, is_published'
+          )
           .eq('is_published', true),
         supabase
           .from('kcn_service_slots')
@@ -95,13 +83,44 @@ export async function fetchApprovedCoachesWithSlots(): Promise<{
 
     const coaches: Coach[] = dbCoaches.map((c) => {
       const coachServices = (dbServices || []).filter((s) => s.coach_id === c.id);
+      const publishedServices: PublishedCoachService[] = coachServices.map((s) => ({
+        id: s.id,
+        title: s.title || '',
+        sportCategory: s.sport_category || '',
+        sportSlug: mapSportLabelToSlug(s.sport_category || ''),
+        description: s.description || '',
+        targetAreas: Array.isArray(s.target_areas) ? s.target_areas : [],
+        price: Number(s.price || 5500),
+        durationMinutes: Number(s.duration_minutes || 60),
+        targetAges: s.target_ages || '4〜12歳（年中〜小学生）',
+      }));
+
       const minPrice =
-        coachServices.length > 0
-          ? Math.min(...coachServices.map((s) => s.price))
+        publishedServices.length > 0
+          ? Math.min(...publishedServices.map((s) => s.price))
           : 5500;
-      const primaryService = coachServices[0];
-      const sports = Array.isArray(c.sport_categories) ? c.sport_categories : [];
-      const areas = Array.isArray(c.target_areas) ? c.target_areas : [];
+      const primaryService = publishedServices[0];
+
+      const profileSports = Array.isArray(c.sport_categories)
+        ? c.sport_categories
+        : [];
+      const serviceSports = Array.from(
+        new Set(publishedServices.map((s) => s.sportCategory).filter(Boolean))
+      );
+
+      // 公開レッスンがある場合は出品種目を優先し、未出品時はプロフィール種目から水泳整合性を確認
+      const rawSports =
+        serviceSports.length > 0
+          ? serviceSports
+          : profileSports.filter((label: string) => {
+              if (mapSportLabelToSlug(label) === 'swimming') {
+                return hasSwimmingEvidence(`${c.title || ''} ${c.bio || ''}`);
+              }
+              return true;
+            });
+
+      const rawAreas = Array.isArray(c.target_areas) ? c.target_areas : [];
+      const areas = sanitizeCoachAreas(rawAreas);
 
       return {
         id: c.id,
@@ -115,18 +134,19 @@ export async function fetchApprovedCoachesWithSlots(): Promise<{
         rating: Number(c.avg_rating || 5.0),
         reviewCount: Number(c.total_completed_lessons || 0),
         hourlyRate: minPrice,
-        durationMinutes: primaryService?.duration_minutes || 60,
-        sports,
-        sportsSlugs: mapSportToSlugs(sports),
-        specialties: sports,
+        durationMinutes: primaryService?.durationMinutes || 60,
+        sports: rawSports,
+        sportsSlugs: mapSportToSlugs(rawSports),
+        specialties: rawSports,
         areas,
         areaSlugs: mapAreaToSlugs(areas),
         bio: c.bio || '',
         achievements: [c.title],
         coachingHistory: ['認定本人確認・目視審査通過コーチ'],
-        targetAges: primaryService?.target_ages || '4〜12歳（年中〜小学生）',
+        targetAges: primaryService?.targetAges || '4〜12歳（年中〜小学生）',
         message: c.bio || 'お子様のペースに合わせて丁寧に指導いたします。',
         isVerified: true,
+        publishedServices,
       };
     });
 

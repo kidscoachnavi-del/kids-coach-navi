@@ -1,5 +1,17 @@
 // キッズコーチナビ モックデータ＆SEOマスタデータ定義（運営会社: 株式会社Wellne）
 
+export interface PublishedCoachService {
+  id: string;
+  title: string;
+  sportCategory: string;
+  sportSlug: string | null;
+  description: string;
+  targetAreas: string[];
+  price: number;
+  durationMinutes: number;
+  targetAges: string;
+}
+
 export interface Coach {
   id: string;
   name: string;
@@ -14,7 +26,7 @@ export interface Coach {
   sports: string[]; // 例: ["水泳", "かけっこ"]
   sportsSlugs: string[]; // 例: ["swimming", "running"]
   specialties: string[]; // 得意分野タグ
-  areas: string[]; // 対応エリア 例: ["世田谷区", "目黒区", "駒沢公園周辺"]
+  areas: string[]; // 対応エリア 例: ["世田谷区", "目黒区", "渋谷区"]
   areaSlugs: string[]; // 例: ["setagaya", "meguro"]
   bio: string;
   achievements: string[]; // 競技実績
@@ -22,6 +34,7 @@ export interface Coach {
   targetAges: string; // 対象年齢
   message: string;
   isVerified: boolean; // 身元確認済みフラグ
+  publishedServices?: PublishedCoachService[];
 }
 
 export interface AvailableSlot {
@@ -76,7 +89,7 @@ export const SPORT_CATEGORIES: SportCategory[] = [
     badge: '人気急上昇',
     code: '03 / SWIMMING',
     shortDesc: '水慣れ・顔つけ、バタ足・息継ぎ、クロール25m完泳、4泳法',
-    longDesc: '個人レッスンが利用可能なプール施設へ出張。集団スイミングスクールで順番待ちばかりだったお子様も、マンツーマンなら60分フルで練習できて驚異的なスピードで進級・完泳。',
+    longDesc: '東京都内のご希望エリアに合わせて、個人指導が可能な環境で完全マンツーマン指導。集団スイミングスクールで順番待ちばかりだったお子様も、60分フルで練習できて無理なく進級・完泳を目指せます。',
     subCategories: ['水慣れ・顔つけ', 'バタ足・息継ぎ克服', 'クロール25m完泳', '平泳ぎ・背泳ぎ・バタフライ'],
     recommendedAges: '3歳〜中学生',
     priceFrom: 6000,
@@ -94,26 +107,78 @@ export const SPORT_CATEGORIES: SportCategory[] = [
   },
 ];
 
-// 対応エリアマスタ（SEO / AIO対応）
+// 対応エリアマスタ（SSoT：初期エリアは東京都内5区のみ・会場は施設名ではなく区・駅エリアで表記）
 export interface AreaInfo {
   slug: string;
   name: string;
   prefecture: string;
-  parks: string[];
+  stationAreas: string[];
 }
 
+export const CORE_AREA_SLUGS = [
+  'setagaya',
+  'meguro',
+  'minato',
+  'shibuya',
+  'shinagawa',
+] as const;
+
 export const AREA_LIST: AreaInfo[] = [
-  { slug: 'setagaya', name: '世田谷区', prefecture: '東京都', parks: ['駒沢オリンピック公園', '世田谷公園', '二子玉川公園'] },
-  { slug: 'meguro', name: '目黒区', prefecture: '東京都', parks: ['林試の森公園', '中目黒公園', '駒場野公園'] },
-  { slug: 'minato', name: '港区', prefecture: '東京都', parks: ['芝公園', '有栖川宮記念公園', '港区立スポーツセンター'] },
-  { slug: 'shibuya', name: '渋谷区', prefecture: '東京都', parks: ['代々木公園', '宮下公園', '渋谷区スポーツセンター'] },
-  { slug: 'shinagawa', name: '品川区', prefecture: '東京都', parks: ['しながわ区民公園', '大井ふ頭中央海浜公園', '戸越公園'] },
-  { slug: 'chuo', name: '中央区', prefecture: '東京都', parks: ['浜町公園', '晴海ふ頭公園', '中央体育館'] },
-  { slug: 'koto', name: '江東区', prefecture: '東京都', parks: ['木場公園', '豊洲公園', '夢の島公園'] },
-  { slug: 'chiba', name: '浦安市・市川市', prefecture: '千葉県', parks: ['浦安市総合公園', '行徳駅前公園', '国府台スポーツセンター'] },
-  { slug: 'funabashi-matsudo', name: '船橋市・松戸市', prefecture: '千葉県', parks: ['船橋市運動公園', '21世紀の森と広場', '秋津公園'] },
-  { slug: 'kanagawa', name: '横浜・川崎エリア', prefecture: '神奈川県', parks: ['等々力緑地', '山下公園', '新横浜公園'] },
-  { slug: 'saitama', name: 'さいたま・南部エリア', prefecture: '埼玉県', parks: ['大宮公園', '別所沼公園', '青木町公園'] },
+  {
+    slug: 'setagaya',
+    name: '世田谷区',
+    prefecture: '東京都',
+    stationAreas: [
+      '二子玉川駅エリア',
+      '三軒茶屋駅エリア',
+      '用賀・桜新町駅エリア',
+      '下北沢・成城学園前駅エリア',
+    ],
+  },
+  {
+    slug: 'meguro',
+    name: '目黒区',
+    prefecture: '東京都',
+    stationAreas: [
+      '中目黒駅エリア',
+      '自由が丘駅エリア',
+      '学芸大学・都立大学駅エリア',
+      '目黒駅エリア',
+    ],
+  },
+  {
+    slug: 'minato',
+    name: '港区',
+    prefecture: '東京都',
+    stationAreas: [
+      '麻布十番・六本木駅エリア',
+      '品川・田町駅エリア',
+      '表参道・青山一丁目駅エリア',
+      '白金高輪駅エリア',
+    ],
+  },
+  {
+    slug: 'shibuya',
+    name: '渋谷区',
+    prefecture: '東京都',
+    stationAreas: [
+      '渋谷・原宿駅エリア',
+      '恵比寿・代官山駅エリア',
+      '代々木上原・幡ヶ谷駅エリア',
+      '笹塚駅エリア',
+    ],
+  },
+  {
+    slug: 'shinagawa',
+    name: '品川区',
+    prefecture: '東京都',
+    stationAreas: [
+      '大井町駅エリア',
+      '五反田・大崎駅エリア',
+      '武蔵小山・戸越銀座駅エリア',
+      '天王洲アイル駅エリア',
+    ],
+  },
 ];
 
 export const MOCK_COACHES: Coach[] = [
@@ -131,9 +196,9 @@ export const MOCK_COACHES: Coach[] = [
     sports: ['かけっこ・走り方'],
     sportsSlugs: ['running'],
     specialties: ['かけっこ・走り方', '運動会対策', 'スタートダッシュ', '姿勢改善'],
-    areas: ['世田谷区', '目黒区', '駒沢公園周辺', '渋谷区'],
-    areaSlugs: ['setagaya', 'meguro', 'shibuya'],
-    bio: '「腕の振り方」と「地面を蹴る感覚」を遊びながら習得。運動会前に1回だけでも劇的にフォームが変わります！駒沢公園や世田谷公園など近隣の公園へ出張します。',
+    areas: ['世田谷区', '目黒区', '港区', '渋谷区', '品川区'],
+    areaSlugs: ['setagaya', 'meguro', 'minato', 'shibuya', 'shinagawa'],
+    bio: '「腕の振り方」と「地面を蹴る感覚」を遊びながら習得。運動会前に1回だけでも劇的にフォームが変わります！東京都内のご希望エリアへ出張します。',
     achievements: [
       '全日本インカレ 4×100mリレー 出場',
       '100m自己ベスト: 10秒68',
@@ -160,16 +225,16 @@ export const MOCK_COACHES: Coach[] = [
     sports: ['水泳・息継ぎ'],
     sportsSlugs: ['swimming'],
     specialties: ['水泳・息継ぎ', '水慣れ・顔つけ', 'クロール25m完泳', '4泳法フォーム改善'],
-    areas: ['港区', '中央区', '江東区', '渋谷区'],
-    areaSlugs: ['minato', 'chuo', 'koto', 'shibuya'],
-    bio: '集団スクールで何ヶ月も進級できない原因を60分で特定。個人指導が可能なプール施設へ出張し、怖がらせずに息継ぎと25m完泳へ導きます。',
+    areas: ['港区', '渋谷区', '目黒区', '品川区'],
+    areaSlugs: ['minato', 'shibuya', 'meguro', 'shinagawa'],
+    bio: '集団スクールで何ヶ月も進級できない原因を60分で特定。個人指導が可能な環境へ出張し、怖がらせずに息継ぎと25m完泳へ導きます。',
     achievements: [
       '国民体育大会（国体）水泳競技 出場',
       '日本水泳連盟公認指導員資格 保持',
     ],
     coachingHistory: [
       '大手スイミングスクール 指導員 5年間',
-      '個人レッスン・プール施設出張指導 3年間（完泳達成率96%）',
+      '個人レッスン出張指導 3年間（完泳達成率96%）',
     ],
     targetAges: '3歳〜小学6年生',
     message: 'お子様のペースに合わせ、「できた！」の喜びを全力でサポートします！',
@@ -189,9 +254,9 @@ export const MOCK_COACHES: Coach[] = [
     sports: ['鉄棒・逆上がり'],
     sportsSlugs: ['school-pe'],
     specialties: ['鉄棒・逆上がり', '跳び箱（開脚跳び）', 'マット運動', '体幹バランス'],
-    areas: ['中央区', '江東区', '港区', '世田谷区'],
-    areaSlugs: ['chuo', 'koto', 'minato', 'setagaya'],
-    bio: '逆上がりができないのは筋力不足ではなく「回る感覚」と「目線」が原因です。近所の公園の鉄棒で楽しく克服しましょう！',
+    areas: ['港区', '世田谷区', '目黒区', '品川区'],
+    areaSlugs: ['minato', 'setagaya', 'meguro', 'shinagawa'],
+    bio: '逆上がりができないのは筋力不足ではなく「回る感覚」と「目線」が原因です。ご希望エリアで段階的に楽しく克服しましょう！',
     achievements: [
       '全日本学生体操競技選手権 出場',
       '日本体操協会公認指導員',
@@ -218,8 +283,8 @@ export const MOCK_COACHES: Coach[] = [
     sports: ['なわとび・二重跳び'],
     sportsSlugs: ['school-pe', 'niche-sports'],
     specialties: ['なわとび・二重跳び', '跳び箱・マット', 'ボール投げ・球技基礎', 'リズムトレーニング'],
-    areas: ['世田谷区', '目黒区', '渋谷区', '横浜・川崎エリア'],
-    areaSlugs: ['setagaya', 'meguro', 'shibuya', 'kanagawa'],
+    areas: ['世田谷区', '目黒区', '渋谷区'],
+    areaSlugs: ['setagaya', 'meguro', 'shibuya'],
     bio: '手首の回し方とジャンプのリズムを分解して指導。学校の体育テスト前に1〜2回の短期集中で自信をつけさせます。',
     achievements: [
       '体育大学 児童スポーツ教育専攻 卒業',

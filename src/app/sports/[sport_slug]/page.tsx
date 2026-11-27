@@ -8,6 +8,7 @@ import DemandRequestCard from '@/components/kids-coach/DemandRequestCard';
 import KidsCoachFooter from '@/components/kids-coach/Footer';
 import JsonLd from '@/components/kids-coach/JsonLd';
 import { fetchApprovedCoachesWithSlots } from '@/lib/kcn-coaches';
+import { filterCoachesForSport } from '@/lib/kcn-sport-matching';
 import {
   SPORT_CATEGORIES,
   AREA_LIST,
@@ -35,7 +36,7 @@ export async function generateMetadata({
 
   const siteUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://kids-coach-navi.com';
   const title = `子ども向け${category.name}の出張マンツーマン指導 | キッズコーチナビ by SWIM PARTNERS`;
-  const description = `${category.name}のマンツーマン指導・出張個人レッスン。${category.shortDesc}。入会金・月会費なしの都度払いで、ご希望の公園や利用可能な施設でプロコーチが丁寧に指導。運営：SWIM PARTNERS。`;
+  const description = `${category.name}のマンツーマン指導・出張個人レッスン。${category.shortDesc}。入会金・月会費なしの都度払いで、東京都内5区（世田谷区・目黒区・港区・渋谷区・品川区）を中心に認定コーチが出張指導。運営：SWIM PARTNERS。`;
 
   return {
     title,
@@ -61,13 +62,9 @@ export default async function SportCategoryPage({ params }: SportPageProps) {
     notFound();
   }
 
-  // 該当種目のコーチを抽出（承認済みDB実データのみ）
+  // 該当種目のコーチを抽出（承認済みDB実データ＋種目整合チェック）
   const { coaches: allCoaches, slots: allSlots } = await fetchApprovedCoachesWithSlots();
-  const coaches = allCoaches.filter(
-    (c) =>
-      c.sportsSlugs.includes(sport_slug) ||
-      c.sports.some((s) => s.includes(category.name.slice(0, 2)))
-  );
+  const coaches = filterCoachesForSport(allCoaches, sport_slug);
 
   // Service 構造化データ（JSON-LD）
   const serviceJsonLd = {
@@ -85,9 +82,12 @@ export default async function SportCategoryPage({ params }: SportPageProps) {
       '@type': 'Offer',
       price: category.priceFrom,
       priceCurrency: 'JPY',
-      availability: 'https://schema.org/InStock',
+      availability:
+        coaches.length > 0
+          ? 'https://schema.org/InStock'
+          : 'https://schema.org/PreOrder',
     },
-    areaServed: ['東京都世田谷区', '東京都目黒区', '東京都港区', '東京都渋谷区', '東京都品川区'],
+    areaServed: AREA_LIST.map((area) => `${area.prefecture}${area.name}`),
     audience: {
       '@type': 'Audience',
       audienceType: '保護者・お子様（3歳〜高校生）',
@@ -243,8 +243,22 @@ export default async function SportCategoryPage({ params }: SportPageProps) {
                 </div>
               )
             ) : (
-              <div className="p-8 text-center text-[#5E5B54] bg-white rounded-3xl border border-[#EADBCC] text-xs">
-                現在この種目の空き枠を順次拡大中です。お気軽にお問い合わせください。
+              <div className="p-8 text-center text-[#5E5B54] bg-white rounded-3xl border border-[#EADBCC] text-xs space-y-3">
+                <p className="font-bold text-[#2C2B29]">
+                  現在、{category.name}を担当できる認定コーチを順次募集・審査中です。
+                </p>
+                <p>
+                  ご希望のエリア・条件は下記リクエストフォームよりお寄せください。対応可能なコーチが登録され次第ご案内します。
+                </p>
+                <div>
+                  <Link
+                    href="/coach-recruit"
+                    className="inline-flex items-center gap-1.5 text-xs font-bold text-[#3E8E84] hover:text-[#2C6B63] underline underline-offset-4"
+                  >
+                    <span>{category.name}の指導経験がある方へ：初期パートナーコーチ募集を見る</span>
+                    <ArrowRight className="w-3.5 h-3.5" strokeWidth={1.75} />
+                  </Link>
+                </div>
               </div>
             )}
           </div>
@@ -252,17 +266,17 @@ export default async function SportCategoryPage({ params }: SportPageProps) {
           {/* 種目・エリアリクエスト（需要データ収集） */}
           <DemandRequestCard defaultSport={category.name} />
 
-          {/* 地域別ページへのSEO内部リンク */}
+          {/* 地域別ページへのSEO内部リンク（SSoT：初期エリアは東京都内5区のみ） */}
           <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#EADBCC] shadow-xs">
             <h3 className="font-heading text-base sm:text-lg font-bold text-[#2C2B29] mb-2 flex items-center gap-2">
               <MapPin className="w-4 h-4 text-[#E3644F]" strokeWidth={1.75} />
-              <span>地域別 {category.name} 出張指導エリア</span>
+              <span>東京都内の{category.name} 対応エリア（初期対象5区）</span>
             </h3>
             <p className="text-xs text-[#5E5B54] mb-6">
-              ご希望の地域を選択すると、公園や個人指導可能な施設に対応したコーチをご確認いただけます。
+              現在は東京都内5区を中心に展開しています。ご希望の区を選択すると、駅・エリア別の対応状況や認定コーチをご確認いただけます。
             </p>
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
               {AREA_LIST.map((area) => (
                 <Link
                   key={area.slug}
@@ -274,6 +288,10 @@ export default async function SportCategoryPage({ params }: SportPageProps) {
                 </Link>
               ))}
             </div>
+
+            <p className="text-[11px] text-[#5E5B54] mt-4">
+              ※上記以外の区・エリアは順次拡大予定です。ご希望エリアがある場合は上記のリクエストフォームよりお寄せください。
+            </p>
           </div>
         </div>
       </main>
