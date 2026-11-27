@@ -72,8 +72,6 @@ interface LessonModelItem {
   concernText: string;
   goalText: string;
   coachingTip: string;
-  coachId: string;
-  coachName: string;
 }
 
 const VOICE_THEME_STYLES: Record<
@@ -121,8 +119,6 @@ const LESSON_MODELS: LessonModelItem[] = [
     goalText: '腕振りと地面を蹴る感覚を楽しく掴み、まっすぐ力強く走れるフォームへ！',
     coachingTip:
       'まずは走り方のクセを一緒に確認し、楽しいミニゲームやドリルを通じて正しい腕振りと姿勢を身につけます。',
-    coachId: 'coach-1',
-    coachName: '田中 健太 コーチ',
   },
   {
     id: 'model-swimming',
@@ -135,8 +131,6 @@ const LESSON_MODELS: LessonModelItem[] = [
     goalText: '個人指導可能なプールで、お子様のペースに合わせて呼吸と腕の動きを習得！',
     coachingTip:
       '水への不安を丁寧にほぐしながら、顔つけ・バタ足・横向き息継ぎのタイミングを1つずつ分解して練習します。',
-    coachId: 'coach-2',
-    coachName: '山本 翔平 コーチ',
   },
   {
     id: 'model-iron-bar',
@@ -149,8 +143,6 @@ const LESSON_MODELS: LessonModelItem[] = [
     goalText: '段階的な補助と声かけで怖さをほぐし、1人で回りきる感覚を習得！',
     coachingTip:
       'いきなり回るのではなく、腕の引きつけや目線の位置を段階練習。小さな「できた！」を積み重ねて自信を育てます。',
-    coachId: 'coach-3',
-    coachName: '佐々木 翼 コーチ',
   },
 ];
 
@@ -274,17 +266,38 @@ export default function HomePageClient({
     setOpenFaqs(nextState);
   };
 
+  const findCoachForSport = (sportKey: SportKey): Coach | null => {
+    const tab = SPORT_TABS[sportKey] || SPORT_TABS.kakekko;
+    return (
+      realCoaches.find((c) =>
+        tab.keywords.some(
+          (kw) =>
+            c.sports.some((s) => s.includes(kw)) ||
+            c.sportsSlugs.includes(tab.sportSlug)
+        )
+      ) ||
+      realCoaches[0] ||
+      null
+    );
+  };
+
+  const resolveLessonModelLink = (item: LessonModelItem) => {
+    const tab = SPORT_TABS[item.sportKey];
+    const matched = findCoachForSport(item.sportKey);
+    if (matched) {
+      return {
+        href: `/coaches/${matched.id}`,
+        label: `${matched.name} コーチの詳細を見る`,
+      };
+    }
+    return {
+      href: `/sports/${tab.sportSlug}`,
+      label: `${item.sportLabel}のコーチ詳細を見る`,
+    };
+  };
+
   const selectedTab = SPORT_TABS[selectedSport] || SPORT_TABS.kakekko;
-  const matchedCoach =
-    realCoaches.find((c) =>
-      selectedTab.keywords.some(
-        (kw) =>
-          c.sports.some((s) => s.includes(kw)) ||
-          c.sportsSlugs.includes(selectedTab.sportSlug)
-      )
-    ) ||
-    realCoaches[0] ||
-    null;
+  const matchedCoach = findCoachForSport(selectedSport);
 
   const currentCoach = matchedCoach
     ? {
@@ -1283,6 +1296,7 @@ export default function HomePageClient({
                     (item) => voiceFilter === 'all' || item.sportKey === voiceFilter
                   ).map((item) => {
                     const style = VOICE_THEME_STYLES[item.accent];
+                    const targetLink = resolveLessonModelLink(item);
                     return (
                       <article
                         key={item.id}
@@ -1358,10 +1372,10 @@ export default function HomePageClient({
                               ※マンツーマン指導のモデルケースです
                             </span>
                             <Link
-                              href={`/coaches/${item.coachId}`}
+                              href={targetLink.href}
                               className="inline-flex items-center gap-0.5 font-bold text-[#3E8E84] hover:text-[#2C6B63] transition-colors"
                             >
-                              <span>{item.coachName}の詳細を見る</span>
+                              <span>{targetLink.label}</span>
                               <ChevronRight className="w-3 h-3" strokeWidth={2} />
                             </Link>
                           </div>
