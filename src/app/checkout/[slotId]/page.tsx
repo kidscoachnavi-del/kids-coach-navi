@@ -332,7 +332,7 @@ export default function CheckoutPage() {
                   受講日時：<strong className="text-[#2C2B29] font-en whitespace-nowrap">{datePart} {timePart}</strong>
                 </div>
                 <div className="text-[#5E5B54]">
-                  決済金額：<strong className="text-[#E3644F] font-en font-extrabold whitespace-nowrap">￥{totalAmount.toLocaleString()}</strong>
+                  決済金額：<strong className="text-[#E3644F] font-en font-extrabold whitespace-nowrap">¥{totalAmount.toLocaleString()}</strong>
                   <span className="whitespace-nowrap">（税込・交通費込）</span>
                 </div>
               </div>
@@ -354,7 +354,7 @@ export default function CheckoutPage() {
               <div className="md:col-span-7 order-2 md:order-1 bg-white rounded-3xl border border-[#EADBCC] p-4 sm:p-6 md:p-8 shadow-xs space-y-5">
                 <div>
                   <span className="inline-block bg-[#FCE7A2] text-[#2C2B29] text-[11px] font-bold px-3 py-1 rounded-full mb-2">
-                    入会金・月会費 ￥0（都度払い）
+                    入会金・月会費 ¥0（都度払い）
                   </span>
                   <h1 className="font-heading text-lg sm:text-2xl font-bold text-[#2C2B29] tracking-tight leading-snug">
                     お支払い・予約確定（カード決済）
@@ -448,7 +448,7 @@ export default function CheckoutPage() {
                       ) : (
                         <>
                           <Zap className="w-4 h-4 shrink-0" strokeWidth={2} />
-                          <span>￥{totalAmount.toLocaleString()} をワンクリック決済する</span>
+                          <span>¥{totalAmount.toLocaleString()} をワンクリック決済する</span>
                         </>
                       )}
                     </button>
@@ -749,7 +749,7 @@ export default function CheckoutPage() {
                       ) : (
                         <>
                           <Lock className="w-4 h-4 shrink-0" strokeWidth={1.75} />
-                          <span>Stripe で ￥{totalAmount.toLocaleString()} を決済する</span>
+                          <span>Stripe で ¥{totalAmount.toLocaleString()} を決済する</span>
                         </>
                       )}
                     </button>
@@ -810,7 +810,7 @@ export default function CheckoutPage() {
                     <span className="text-[10px] text-[#5E5B54] whitespace-nowrap">税込・交通費込（追加費用なし）</span>
                   </div>
                   <span className="font-en text-2xl font-extrabold text-[#E3644F] whitespace-nowrap shrink-0">
-                    ￥{totalAmount.toLocaleString()}
+                    ¥{totalAmount.toLocaleString()}
                   </span>
                 </div>
               </div>

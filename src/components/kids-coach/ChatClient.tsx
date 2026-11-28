@@ -976,7 +976,7 @@ export default function ChatClient({
                               </span>
                               <div className="flex items-center gap-1.5 sm:mt-0.5">
                                 <span className="text-[11px] sm:text-xs font-extrabold text-[#2C2B29] font-en whitespace-nowrap">
-                                  ￥{selectedBooking.total_amount.toLocaleString()}
+                                  ¥{selectedBooking.total_amount.toLocaleString()}
                                 </span>
                                 <span className="text-[10px] font-bold text-[#5E5B54] truncate">
                                   {selectedMeta.isPaid
@@ -1069,7 +1069,7 @@ export default function ChatClient({
                               <span>選択中の予約：日程確定・支払い完了</span>
                             </div>
                             <div className="text-[11px] text-[#5E5B54] font-bold">
-                              予約日時：<span className="font-en text-[#2C2B29]">{formatSlotLabel(selectedBooking.slot?.start_time, selectedBooking.slot?.end_time)}</span> ／ <span className="font-en text-[#E3644F]">￥{selectedBooking.total_amount.toLocaleString()}</span>
+                              予約日時：<span className="font-en text-[#2C2B29]">{formatSlotLabel(selectedBooking.slot?.start_time, selectedBooking.slot?.end_time)}</span> ／ <span className="font-en text-[#E3644F]">¥{selectedBooking.total_amount.toLocaleString()}</span>
                             </div>
                           </div>
                         ) : (
@@ -1079,7 +1079,7 @@ export default function ChatClient({
                               <span>選択中の予約：日程調整中・お支払い前</span>
                             </div>
                             <div className="text-[11px] text-[#5E5B54] font-bold">
-                              希望日時：<span className="font-en text-[#2C2B29]">{formatSlotLabel(selectedBooking.slot?.start_time, selectedBooking.slot?.end_time)}</span> ／ <span className="font-en text-[#2C2B29]">￥{selectedBooking.total_amount.toLocaleString()}</span>
+                              希望日時：<span className="font-en text-[#2C2B29]">{formatSlotLabel(selectedBooking.slot?.start_time, selectedBooking.slot?.end_time)}</span> ／ <span className="font-en text-[#2C2B29]">¥{selectedBooking.total_amount.toLocaleString()}</span>
                             </div>
                           </div>
                         )}

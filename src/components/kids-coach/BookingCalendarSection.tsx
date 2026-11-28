@@ -481,7 +481,7 @@ export default function BookingCalendarSection({
             STEP 2. 1コマの時間を選択
           </label>
           <span className="text-[11px] font-bold text-[#3E8E84]">
-            選択中: {selectedDuration}分（￥{calculatedPrice.toLocaleString()}・税込）
+            選択中: {selectedDuration}分（¥{calculatedPrice.toLocaleString()}・税込）
           </span>
         </div>
 
@@ -523,7 +523,7 @@ export default function BookingCalendarSection({
                     active ? 'text-white' : 'text-[#2C2B29]'
                   }`}
                 >
-                  ￥{optPrice.toLocaleString()}
+                  ¥{optPrice.toLocaleString()}
                 </span>
               </button>
             );
@@ -582,7 +582,7 @@ export default function BookingCalendarSection({
                         {slot.startTime} - {computedEndTime}
                       </div>
                       <span className="text-[11px] text-[#5E5B54] font-bold block whitespace-nowrap">
-                        {selectedDuration}分・￥{calculatedPrice.toLocaleString()}
+                        {selectedDuration}分・¥{calculatedPrice.toLocaleString()}
                       </span>
                     </div>
                   </div>

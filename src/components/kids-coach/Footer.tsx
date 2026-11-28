@@ -33,7 +33,7 @@ export default function KidsCoachFooter({
               <div className="flex flex-wrap items-center gap-4 pt-1 text-xs font-bold text-[#2C2B29]">
                 <span className="inline-flex items-center gap-1.5">
                   <Check className="w-3.5 h-3.5 text-[#3E8E84]" strokeWidth={2} />
-                  初期登録費・掲載費 ￥0
+                  初期登録費・掲載費 ¥0
                 </span>
                 <span className="inline-flex items-center gap-1.5">
                   <Check className="w-3.5 h-3.5 text-[#3E8E84]" strokeWidth={2} />

@@ -163,7 +163,7 @@ export default function StripeMockModal({
               <div className="text-[#5E5B54]">
                 決済金額:{' '}
                 <strong className="text-[#E3644F] font-en font-extrabold">
-                  ￥{effectivePrice.toLocaleString()}
+                  ¥{effectivePrice.toLocaleString()}
                 </strong>
               </div>
             </div>
@@ -197,7 +197,7 @@ export default function StripeMockModal({
                 </span>
               </div>
               <span className="font-en text-2xl font-extrabold text-[#E3644F]">
-                ￥{effectivePrice.toLocaleString()}
+                ¥{effectivePrice.toLocaleString()}
               </span>
             </div>
 
@@ -283,12 +283,12 @@ export default function StripeMockModal({
               ) : hasSavedCard ? (
                 <>
                   <Zap className="w-4 h-4 shrink-0" strokeWidth={2} />
-                  <span>Stripe 登録済みカードで ￥{effectivePrice.toLocaleString()} をワンクリック決済</span>
+                  <span>Stripe 登録済みカードで ¥{effectivePrice.toLocaleString()} をワンクリック決済</span>
                 </>
               ) : (
                 <>
                   <Lock className="w-4 h-4 shrink-0" strokeWidth={1.75} />
-                  <span>Stripe で ￥{effectivePrice.toLocaleString()} を決済して予約確定</span>
+                  <span>Stripe で ¥{effectivePrice.toLocaleString()} を決済して予約確定</span>
                 </>
               )}
             </button>
