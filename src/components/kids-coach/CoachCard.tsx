@@ -69,7 +69,7 @@ export default function CoachCard({ coach, slots = [], wide = false }: CoachCard
             {/* 料金 */}
             <div className="mt-2.5 flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5 text-xs">
               <span className="font-en text-lg sm:text-xl font-extrabold text-[#2C2B29]">
-                ￥{coach.hourlyRate.toLocaleString()}
+                ¥{coach.hourlyRate.toLocaleString()}
               </span>
               <span className="text-[#5E5B54]">/ {coach.durationMinutes}分</span>
               <span className="text-[10px] font-bold text-[#3E8E84] bg-[#D2E7DF]/40 px-2 py-0.5 rounded-full">

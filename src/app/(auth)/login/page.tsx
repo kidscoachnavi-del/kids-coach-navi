@@ -50,7 +50,7 @@ function LoginForm() {
                         </div>
                     </Link>
                     <h1 className="font-heading text-base font-bold text-[#2C2B29] pt-2">
-                        管理者・コーチ ログイン
+                        ログイン
                     </h1>
                 </div>
 

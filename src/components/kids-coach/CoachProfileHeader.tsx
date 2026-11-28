@@ -74,7 +74,7 @@ export default function CoachProfileHeader({ coach }: CoachProfileHeaderProps) {
             <div>
               <span className="text-[11px] font-bold text-[#5E5B54] block">指導料金（税込）</span>
               <span className="font-en text-xl font-extrabold text-[#2C2B29]">
-                ￥{coach.hourlyRate.toLocaleString()}
+                ¥{coach.hourlyRate.toLocaleString()}
               </span>
               <span className="text-[11px] text-[#5E5B54] block">/ 1コマ{coach.durationMinutes}分</span>
             </div>
@@ -99,18 +99,6 @@ export default function CoachProfileHeader({ coach }: CoachProfileHeaderProps) {
               </span>
               <span className="text-[11px] text-[#5E5B54] block">交通費込みの明朗価格</span>
             </div>
-          </div>
-
-          {/* 得意分野タグ */}
-          <div className="mt-3.5 flex flex-wrap gap-1.5 justify-center md:justify-start">
-            {coach.specialties.map((spec, i) => (
-              <span
-                key={i}
-                className="px-2.5 py-1 rounded-full text-xs font-bold bg-[#FDFBF7] text-[#2C2B29] border border-[#EADBCC]"
-              >
-                #{spec}
-              </span>
-            ))}
           </div>
 
           {/* エリア */}

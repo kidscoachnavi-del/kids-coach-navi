@@ -756,7 +756,7 @@ export default function HomePageClient({
 
                   <div id="coach-price" className="text-right">
                     <span className="font-en text-lg font-extrabold text-[#2C2B29]">
-                      ￥{currentCoach.priceAmount}
+                      ¥{currentCoach.priceAmount}
                     </span>
                     <span className="text-[11px] text-[#5E5B54] font-bold ml-1">
                       / 60分（交通費込）
@@ -1175,7 +1175,7 @@ export default function HomePageClient({
                           REASON 03
                         </span>
                         <span className="text-[10px] font-bold text-amber-900 bg-[#FCE7A2] px-2.5 py-0.5 rounded-full">
-                          入会金 ￥0
+                          入会金 ¥0
                         </span>
                       </div>
                       <h3 className="font-heading text-sm sm:text-base font-bold text-[#2C2B29] leading-snug">

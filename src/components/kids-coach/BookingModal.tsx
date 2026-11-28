@@ -168,7 +168,7 @@ export default function BookingModal({
             <div className="text-right">
               <span className="text-[10px] text-[#5E5B54] font-bold block">お支払い金額（{effectiveDuration}分・税込・交通費込）</span>
               <span className="font-en text-xl font-extrabold text-[#E3644F]">
-                ￥{effectivePrice.toLocaleString()}
+                ¥{effectivePrice.toLocaleString()}
               </span>
             </div>
           </div>

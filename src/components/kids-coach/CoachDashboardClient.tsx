@@ -365,7 +365,7 @@ export default function CoachDashboardClient({
       )
     );
     showToast(
-      `完了報告を受け付けました（￥${target.coach_payout.toLocaleString()}）。保護者確認または48時間経過後に報酬が確定し、隔週振込の対象となります。`
+      `完了報告を受け付けました（¥${target.coach_payout.toLocaleString()}）。保護者確認または48時間経過後に報酬が確定し、隔週振込の対象となります。`
     );
   };
 
@@ -375,7 +375,7 @@ export default function CoachDashboardClient({
     setBookings((prev) =>
       prev.map((b) => (b.id === bookingId ? { ...b, status: 'completed' } : b))
     );
-    const payoutText = target ? `￥${target.coach_payout.toLocaleString()}` : '75%';
+    const payoutText = target ? `¥${target.coach_payout.toLocaleString()}` : '75%';
     showToast(
       `保護者の確認が完了し、報酬（${payoutText}）が確定しました。次回の隔週（2週に1回）Stripe振込日に自動送金されます。`
     );
@@ -530,10 +530,10 @@ export default function CoachDashboardClient({
               </div>
               <div>
                 <div className="font-en text-2xl sm:text-3xl font-extrabold text-[#FCE7A2] tracking-tight">
-                  ￥{totalExpectedPayout.toLocaleString()}
+                  ¥{totalExpectedPayout.toLocaleString()}
                 </div>
                 <p className="text-[11px] text-white/75 mt-1">
-                  総受講料 ￥{totalGrossAmount.toLocaleString()} の75%（2週に1回自動振込）
+                  総受講料 ¥{totalGrossAmount.toLocaleString()} の75%（2週に1回自動振込）
                 </p>
               </div>
             </div>
@@ -551,7 +551,7 @@ export default function CoachDashboardClient({
               </div>
               <div>
                 <div className="font-en text-2xl sm:text-3xl font-extrabold text-[#3E8E84] tracking-tight">
-                  ￥{completedPayout.toLocaleString()}
+                  ¥{completedPayout.toLocaleString()}
                 </div>
                 <p className="text-[11px] text-[#5E5B54] mt-1">
                   保護者確認済み・次回隔週振込日に自動送金
@@ -572,11 +572,11 @@ export default function CoachDashboardClient({
               </div>
               <div>
                 <div className="font-en text-2xl sm:text-3xl font-extrabold text-[#2C2B29] tracking-tight">
-                  ￥{escrowPayout.toLocaleString()}
+                  ¥{escrowPayout.toLocaleString()}
                 </div>
                 <p className="text-[11px] text-[#5E5B54] mt-1">
                   {pendingBookings.length > 0
-                    ? `※未決済・相談中 ${pendingBookings.length}件（￥${pendingPayout.toLocaleString()}）は別途`
+                    ? `※未決済・相談中 ${pendingBookings.length}件（¥${pendingPayout.toLocaleString()}）は別途`
                     : '終了後の完了報告＋保護者確認（48h）で確定'}
                 </p>
               </div>
@@ -634,7 +634,7 @@ export default function CoachDashboardClient({
               <div className="bg-[#FDFBF7] px-3.5 py-2 rounded-2xl border border-[#EADBCC] text-xs font-bold flex items-center gap-2 self-start sm:self-auto whitespace-nowrap">
                 <span className="text-[#5E5B54]">受取合計見込み:</span>
                 <span className="font-en text-base font-extrabold text-[#3E8E84]">
-                  ￥{totalExpectedPayout.toLocaleString()}
+                  ¥{totalExpectedPayout.toLocaleString()}
                 </span>
               </div>
             </div>
@@ -689,9 +689,9 @@ export default function CoachDashboardClient({
                       <div className="text-left sm:text-left lg:text-right flex sm:block items-baseline justify-between gap-2">
                         <span className="text-[10px] text-[#5E5B54] block font-bold">受講料 / コーチ受取 (75%)</span>
                         <div className="flex sm:block items-baseline gap-1.5">
-                          <span className="font-en text-xs text-[#5E5B54]">￥{booking.total_amount.toLocaleString()}</span>
+                          <span className="font-en text-xs text-[#5E5B54]">¥{booking.total_amount.toLocaleString()}</span>
                           <span className="font-en text-sm font-extrabold text-[#3E8E84] sm:block">
-                            → ￥{booking.coach_payout.toLocaleString()}
+                            → ¥{booking.coach_payout.toLocaleString()}
                           </span>
                         </div>
                       </div>
@@ -821,7 +821,7 @@ export default function CoachDashboardClient({
                         #{srv.sport_category}
                       </span>
                       <span className="font-en text-xl font-extrabold text-[#2C2B29]">
-                        ￥{srv.price.toLocaleString()}
+                        ¥{srv.price.toLocaleString()}
                         <span className="text-xs font-sans text-[#5E5B54] font-normal"> / 60分</span>
                       </span>
                     </div>
