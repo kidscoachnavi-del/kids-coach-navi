@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import Script from "next/script";
 import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
@@ -25,12 +26,28 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const gaMeasurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID?.trim();
+
   return (
     <html lang="ja" suppressHydrationWarning>
       <body
         className="antialiased font-sans relative min-h-screen bg-background text-foreground selection:bg-sky-100"
         suppressHydrationWarning
       >
+        {gaMeasurementId && (
+          <>
+            <Script
+              src={`https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(gaMeasurementId)}`}
+              strategy="afterInteractive"
+            />
+            <Script id="ga4-gtag-init" strategy="afterInteractive">
+              {`window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', ${JSON.stringify(gaMeasurementId)});`}
+            </Script>
+          </>
+        )}
         <AuthProvider>
           {children}
         </AuthProvider>
