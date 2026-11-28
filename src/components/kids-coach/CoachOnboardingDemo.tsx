@@ -26,26 +26,17 @@ const CORE_AREA_SLUGS = ['setagaya', 'meguro', 'minato', 'shibuya', 'shinagawa']
  * 顔写真登録＋登録時のリアルタイム顔撮影＋Stripe自動本人確認を必須コンプラゲートとして強制する
  */
 export default function CoachOnboardingDemo() {
-  const [displayName, setDisplayName] = useState('田中 健太');
+  const [displayName, setDisplayName] = useState('');
   const [coachEmail, setCoachEmail] = useState('');
-  const [title, setTitle] = useState('元インカレ陸上 ｜ 指導歴5年');
-  const [selectedSports, setSelectedSports] = useState<string[]>([
-    'かけっこ・陸上',
-    '学校体育克服',
-  ]);
-  const [selectedAreas, setSelectedAreas] = useState<string[]>([
-    '世田谷区',
-    '目黒区',
-    '品川区',
-  ]);
-  const [bio, setBio] = useState(
-    '「腕の振り方」と「地面を蹴る感覚」を遊びながら習得できるよう指導しています。'
-  );
+  const [title, setTitle] = useState('');
+  const [selectedSports, setSelectedSports] = useState<string[]>([]);
+  const [selectedAreas, setSelectedAreas] = useState<string[]>([]);
+  const [bio, setBio] = useState('');
 
   // ① プロフィール用顔写真（必須）
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
 
-  // ② 登録時のリアルタイム顔撮影（必須・カメラまたはデモ撮影）
+  // ② 登録時のリアルタイム顔撮影（必須・カメラ撮影）
   const [isCameraActive, setIsCameraActive] = useState(false);
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [liveSelfieUrl, setLiveSelfieUrl] = useState<string | null>(null);
@@ -108,13 +99,6 @@ export default function CoachOnboardingDemo() {
     reader.readAsDataURL(file);
   };
 
-  /** テスト用：サンプル顔写真をセット */
-  const handleSetSampleAvatar = () => {
-    setAvatarPreview(
-      'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80'
-    );
-  };
-
   /** Webカメラを起動してリアルタイム撮影準備を行う */
   const handleStartCamera = async () => {
     setCameraError(null);
@@ -124,7 +108,7 @@ export default function CoachOnboardingDemo() {
       !navigator.mediaDevices.getUserMedia
     ) {
       setCameraError(
-        'お使いの環境ではカメラを起動できませんでした。「テスト用自動撮影」でお試しください。'
+        'お使いの環境ではカメラを起動できませんでした。カメラ付き端末または対応ブラウザから再度お試しください。'
       );
       return;
     }
@@ -143,7 +127,7 @@ export default function CoachOnboardingDemo() {
       }, 50);
     } catch {
       setCameraError(
-        'カメラの許可が得られませんでした。ブラウザ設定をご確認いただくか「テスト用自動撮影」をご利用ください。'
+        'カメラの許可が得られませんでした。ブラウザのカメラ権限設定をご確認のうえ、再度お試しください。'
       );
     }
   };
@@ -237,15 +221,6 @@ export default function CoachOnboardingDemo() {
       stopCamera();
       saveCapturedSelfie(dataUrl);
     }
-  };
-
-  /** カメラ非対応環境向けのテスト自動撮影 */
-  const handleSimulateLiveCapture = () => {
-    stopCamera();
-    setCameraError(null);
-    saveCapturedSelfie(
-      'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80'
-    );
   };
 
   // コンプライアンス必須2要件（顔写真登録＋リアルタイム顔撮影）が満たされているか
@@ -444,15 +419,6 @@ export default function CoachOnboardingDemo() {
                         className="hidden"
                       />
                     </label>
-                    {!avatarPreview && (
-                      <button
-                        type="button"
-                        onClick={handleSetSampleAvatar}
-                        className="px-3 py-2 rounded-full bg-[#3E8E84]/10 text-[#3E8E84] hover:bg-[#3E8E84]/20 text-[11px] font-bold cursor-pointer whitespace-nowrap"
-                      >
-                        デモ写真を使う
-                      </button>
-                    )}
                   </div>
                 </div>
 
@@ -465,6 +431,7 @@ export default function CoachOnboardingDemo() {
                       id="coach-name"
                       type="text"
                       required
+                      placeholder="例: 山田 太郎"
                       value={displayName}
                       onChange={(e) => setDisplayName(e.target.value)}
                       className="w-full h-11 px-3.5 rounded-xl border border-[#EADBCC] bg-[#FDFBF7] text-xs font-bold text-[#2C2B29] focus:outline-none focus:border-[#E3644F] focus:bg-white"
@@ -478,7 +445,7 @@ export default function CoachOnboardingDemo() {
                       id="coach-email"
                       type="email"
                       required
-                      placeholder="coach@example.com"
+                      placeholder="メールアドレスを入力してください"
                       value={coachEmail}
                       onChange={(e) => setCoachEmail(e.target.value)}
                       className="w-full h-11 px-3.5 rounded-xl border border-[#EADBCC] bg-[#FDFBF7] text-xs font-bold text-[#2C2B29] focus:outline-none focus:border-[#E3644F] focus:bg-white"
@@ -494,6 +461,7 @@ export default function CoachOnboardingDemo() {
                     id="coach-title"
                     type="text"
                     required
+                    placeholder="例: 元水泳選手・指導歴5年 / 小学校体育専門"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                     className="w-full h-11 px-3.5 rounded-xl border border-[#EADBCC] bg-[#FDFBF7] text-xs font-bold text-[#2C2B29] focus:outline-none focus:border-[#E3644F] focus:bg-white"
@@ -576,6 +544,7 @@ export default function CoachOnboardingDemo() {
                   <textarea
                     id="coach-bio"
                     rows={3}
+                    placeholder="指導方針やお子様・保護者様へのメッセージをご記入ください。"
                     value={bio}
                     onChange={(e) => setBio(e.target.value)}
                     className="w-full p-3 rounded-xl border border-[#EADBCC] bg-[#FDFBF7] text-xs text-[#2C2B29] leading-relaxed focus:outline-none focus:border-[#E3644F] focus:bg-white"
@@ -594,8 +563,8 @@ export default function CoachOnboardingDemo() {
                       登録時リアルタイム顔撮影（必須）
                     </h2>
                   </div>
-                  <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-[#E3644F]/10 text-[#E3644F]">
-                    なりすまし防止コンプラ
+                  <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-[#E3644F]/10 text-[#E3644F] whitespace-nowrap">
+                    なりすまし防止コンプライアンス
                   </span>
                 </div>
 
@@ -676,13 +645,6 @@ export default function CoachOnboardingDemo() {
                     >
                       <Camera className="w-4 h-4 shrink-0" strokeWidth={1.75} />
                       <span>カメラを起動して顔写真を撮る</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={handleSimulateLiveCapture}
-                      className="h-11 px-4 rounded-full bg-[#FDFBF7] border border-[#EADBCC] hover:border-[#3E8E84] text-[#3E8E84] font-bold text-xs inline-flex items-center justify-center gap-1.5 transition-colors cursor-pointer whitespace-nowrap"
-                    >
-                      <span>テスト用：自動撮影シミュレーション</span>
                     </button>
                   </div>
                 )}

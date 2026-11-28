@@ -1,29 +1,30 @@
-'use client';
+import { redirect } from 'next/navigation';
 
-import { useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+export const dynamic = 'force-dynamic';
+
+interface BookingChatRedirectPageProps {
+  params: Promise<{ bookingId: string }>;
+  searchParams: Promise<{ paid?: string }>;
+}
 
 /**
  * 個別予約チャットURLへのアクセスをチャット一覧画面（/chat）へ統一リダイレクトする
  */
-export default function BookingChatRedirectPage() {
-  const params = useParams();
-  const router = useRouter();
-  const bookingId = (params?.bookingId as string) || 'bk-demo-001';
+export default async function BookingChatRedirectPage({
+  params,
+  searchParams,
+}: BookingChatRedirectPageProps) {
+  const { bookingId } = await params;
+  const resolvedSearch = await searchParams;
 
-  useEffect(() => {
-    const search = new URLSearchParams(window.location.search);
-    const nextParams = new URLSearchParams();
+  const nextParams = new URLSearchParams();
+  if (bookingId) {
     nextParams.set('room', bookingId);
-    if (search.get('paid') === '1') {
-      nextParams.set('paid', '1');
-    }
-    router.replace(`/chat?${nextParams.toString()}`);
-  }, [bookingId, router]);
+  }
+  if (resolvedSearch.paid === '1') {
+    nextParams.set('paid', '1');
+  }
 
-  return (
-    <div className="min-h-screen bg-[#FDFBF7] flex items-center justify-center text-xs font-bold text-[#5E5B54]">
-      チャット一覧へ移動しています...
-    </div>
-  );
+  const query = nextParams.toString();
+  redirect(query ? `/chat?${query}` : '/chat');
 }

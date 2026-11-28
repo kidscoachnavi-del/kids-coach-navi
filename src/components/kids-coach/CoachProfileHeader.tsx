@@ -130,9 +130,11 @@ export default function CoachProfileHeader({ coach }: CoachProfileHeaderProps) {
         </h2>
         <div className="bg-[#FDFBF7] p-4 sm:p-5 rounded-2xl border border-[#EADBCC] leading-relaxed text-xs sm:text-sm text-[#5E5B54] whitespace-pre-line">
           {coach.bio}
-          <div className="mt-3 pt-3 border-t border-[#EADBCC] text-xs font-bold text-[#2C2B29]">
-            保護者・お子さまへのメッセージ: 「{coach.message}」
-          </div>
+          {coach.message && coach.message.trim() !== coach.bio.trim() && (
+            <div className="mt-3 pt-3 border-t border-[#EADBCC] text-xs font-bold text-[#2C2B29]">
+              保護者・お子さまへのメッセージ: 「{coach.message}」
+            </div>
+          )}
         </div>
       </div>
 

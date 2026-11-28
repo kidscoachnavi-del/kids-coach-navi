@@ -232,8 +232,40 @@ export default function CoachRecruitPage() {
                 </section>
             </main>
 
-            <footer className="border-t border-[#E6E1D8] bg-[#F3EFE6] py-8 text-center text-xs text-stone-500">
-                <p>© {new Date().getFullYear()} Kids Coach Navi by SWIM PARTNERS</p>
+            <footer className="border-t border-[#E6E1D8] bg-[#F3EFE6] py-10 text-center text-xs text-stone-500">
+                <div className="mx-auto max-w-4xl px-4 space-y-4">
+                    <div>
+                        <p className="font-bold text-[#1C1917] text-sm">
+                            キッズコーチナビ（Kids Coach Navi）
+                        </p>
+                        <p className="text-[11px] text-stone-500 mt-0.5">
+                            運営事業者：SWIM PARTNERS
+                        </p>
+                    </div>
+                    <nav
+                        aria-label="フッターナビゲーション"
+                        className="flex flex-wrap justify-center gap-x-5 gap-y-2 text-xs font-medium text-stone-600"
+                    >
+                        <Link href="/faq" className="hover:text-[#1C1917] transition-colors">
+                            よくある質問
+                        </Link>
+                        <Link href="/contact" className="hover:text-[#1C1917] transition-colors">
+                            お問い合わせ
+                        </Link>
+                        <Link href="/terms" className="hover:text-[#1C1917] transition-colors">
+                            利用規約
+                        </Link>
+                        <Link href="/privacy" className="hover:text-[#1C1917] transition-colors">
+                            プライバシー
+                        </Link>
+                        <Link href="/tokushoho" className="hover:text-[#1C1917] transition-colors">
+                            特定商取引法
+                        </Link>
+                    </nav>
+                    <p className="text-[11px] text-stone-500 pt-1">
+                        © {new Date().getFullYear()} SWIM PARTNERS. All rights reserved.
+                    </p>
+                </div>
             </footer>
         </div>
     );

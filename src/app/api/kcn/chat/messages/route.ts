@@ -1,12 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { validateChatMessage } from '@/types/kids-coach-db';
 
 /**
- * チャットメッセージ送信API（中抜き防止フィルター＋削除済みロックをサーバー側で強制）
+ * チャットメッセージ送信API（認証必須＋中抜き防止フィルター＋削除済みロックをサーバー側で強制）
  */
 export async function POST(req: NextRequest) {
-  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+  if (
+    !process.env.NEXT_PUBLIC_SUPABASE_URL ||
+    !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+    !process.env.SUPABASE_SERVICE_ROLE_KEY
+  ) {
     return NextResponse.json(
       { error: '本番環境変数（Supabase）が未設定です。' },
       { status: 503 }
@@ -14,16 +19,27 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const { roomId, bookingId, senderId, senderRole, message } =
+    const authClient = await createClient();
+    const {
+      data: { user },
+      error: authError,
+    } = await authClient.auth.getUser();
+
+    if (authError || !user) {
+      return NextResponse.json(
+        { error: 'ログインが必要です。' },
+        { status: 401 }
+      );
+    }
+
+    const { roomId, bookingId, message } =
       (await req.json()) as {
         roomId: string;
         bookingId?: string;
-        senderId: string;
-        senderRole: 'parent' | 'coach';
         message: string;
       };
 
-    if (!roomId || !senderId || !senderRole || !message?.trim()) {
+    if (!roomId || !message?.trim()) {
       return NextResponse.json(
         { error: '必須パラメータが不足しています。' },
         { status: 400 }
@@ -49,12 +65,15 @@ export async function POST(req: NextRequest) {
         { status: 403 }
       );
     }
-    if (senderId !== room.parent_id && senderId !== room.coach_id) {
+    if (user.id !== room.parent_id && user.id !== room.coach_id) {
       return NextResponse.json(
         { error: '送信権限がありません。' },
         { status: 403 }
       );
     }
+
+    const resolvedSenderRole: 'parent' | 'coach' =
+      user.id === room.coach_id ? 'coach' : 'parent';
 
     // サーバー側で連絡先交換・直接取引ワードを検査して自動マスク
     const validation = validateChatMessage(message.trim());
@@ -67,8 +86,8 @@ export async function POST(req: NextRequest) {
       .insert({
         room_id: room.id,
         booking_id: bookingId || null,
-        sender_id: senderId,
-        sender_role: senderRole,
+        sender_id: user.id,
+        sender_role: resolvedSenderRole,
         message: storedText,
       })
       .select('*')

@@ -52,7 +52,7 @@ const EMPTY_COACH_PROFILE: CoachProfile = {
   bio: '',
   stripe_account_id: '',
   stripe_payouts_enabled: false,
-  avg_rating: 5.0,
+  avg_rating: 0,
   total_completed_lessons: 0,
   created_at: '',
 };
@@ -492,10 +492,12 @@ export default function CoachDashboardClient({
                   <span className="text-[10px] sm:text-[11px] font-bold text-[#3E8E84] bg-[#3E8E84]/10 px-2.5 py-0.5 rounded-full whitespace-nowrap">
                     認定コーチ出品・管理
                   </span>
-                  <span className="inline-flex items-center gap-1 font-en text-[11px] sm:text-xs font-extrabold text-[#2C2B29] bg-[#FCE7A2] px-2.5 py-0.5 rounded-full whitespace-nowrap">
-                    <Star className="w-3 h-3 fill-[#E3644F] text-[#E3644F] shrink-0" strokeWidth={1.75} />
-                    <span>{profile.avg_rating}</span>
-                  </span>
+                  {profile.total_completed_lessons > 0 && profile.avg_rating > 0 && (
+                    <span className="inline-flex items-center gap-1 font-en text-[11px] sm:text-xs font-extrabold text-[#2C2B29] bg-[#FCE7A2] px-2.5 py-0.5 rounded-full whitespace-nowrap">
+                      <Star className="w-3 h-3 fill-[#E3644F] text-[#E3644F] shrink-0" strokeWidth={1.75} />
+                      <span>{profile.avg_rating}</span>
+                    </span>
+                  )}
                 </div>
                 <h2 className="font-heading text-base sm:text-xl font-bold text-[#2C2B29] leading-snug">
                   {profile.display_name} コーチ
