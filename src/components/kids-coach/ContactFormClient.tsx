@@ -132,7 +132,7 @@ export default function ContactFormClient() {
           id="contact-name"
           type="text"
           required
-          placeholder="例: テスト太郎"
+          placeholder="例: 山田 太郎"
           value={name}
           onChange={(e) => setName(e.target.value)}
           className="w-full h-11 px-3.5 rounded-xl border border-[#EADBCC] bg-[#FDFBF7] text-xs font-bold text-[#2C2B29] focus:outline-none focus:border-[#E3644F] focus:bg-white"

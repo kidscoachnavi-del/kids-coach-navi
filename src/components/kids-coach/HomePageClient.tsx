@@ -300,28 +300,38 @@ export default function HomePageClient({
   const matchedCoach = findCoachForSport(selectedSport);
 
   const currentCoach = matchedCoach
-    ? {
-        id: matchedCoach.id,
-        sportLabel: selectedTab.sportLabel,
-        sportSlug: matchedCoach.sportsSlugs[0] || selectedTab.sportSlug,
-        name: `${matchedCoach.name} コーチ`,
-        bio: matchedCoach.title,
-        rating: matchedCoach.rating.toFixed(1),
-        reviewCount: matchedCoach.reviewCount,
-        tag: `#${matchedCoach.sports[0] || selectedTab.sportLabel}`,
-        title: matchedCoach.bio || matchedCoach.title,
-        summary: matchedCoach.message || matchedCoach.bio,
-        area: `${matchedCoach.areas.join('・')}へ出張`,
-        priceAmount: matchedCoach.hourlyRate.toLocaleString(),
-        initial: matchedCoach.initial || matchedCoach.name.slice(0, 1),
-        nextSlots: realSlots
-          .filter((s) => s.coachId === matchedCoach.id && s.status === 'available')
-          .slice(0, 3)
-          .map((s) => ({
-            dateLabel: formatSlotShortDate(s.date, s.dayOfWeek),
-            timeLabel: `${s.startTime}〜`,
-          })),
-      }
+    ? (() => {
+        const coachBio = (matchedCoach.bio || '').trim();
+        const coachMessage = (matchedCoach.message || '').trim();
+        const cardTitle = coachBio;
+        const cardSummary =
+          coachMessage && coachMessage !== coachBio ? coachMessage : '';
+        const hasReviews =
+          matchedCoach.reviewCount > 0 && matchedCoach.rating > 0;
+
+        return {
+          id: matchedCoach.id,
+          sportLabel: selectedTab.sportLabel,
+          sportSlug: matchedCoach.sportsSlugs[0] || selectedTab.sportSlug,
+          name: `${matchedCoach.name} コーチ`,
+          bio: matchedCoach.title,
+          rating: hasReviews ? matchedCoach.rating.toFixed(1) : null,
+          reviewCount: matchedCoach.reviewCount,
+          tag: `#${matchedCoach.sports[0] || selectedTab.sportLabel}`,
+          title: cardTitle,
+          summary: cardSummary,
+          area: `${matchedCoach.areas.join('・')}へ出張`,
+          priceAmount: matchedCoach.hourlyRate.toLocaleString(),
+          initial: matchedCoach.initial || matchedCoach.name.slice(0, 1),
+          nextSlots: realSlots
+            .filter((s) => s.coachId === matchedCoach.id && s.status === 'available')
+            .slice(0, 3)
+            .map((s) => ({
+              dateLabel: formatSlotShortDate(s.date, s.dayOfWeek),
+              timeLabel: `${s.startTime}〜`,
+            })),
+        };
+      })()
     : null;
 
   useEffect(() => {
@@ -735,11 +745,13 @@ export default function HomePageClient({
                       <span className="w-1.5 h-1.5 rounded-full bg-[#3E8E84]" />
                       <span>今週予約受付中</span>
                     </span>
-                    <span className="inline-flex items-center gap-1 font-en text-[11px] font-bold text-[#2C2B29] bg-[#FCE7A2] px-2.5 py-1 rounded-full">
-                      <Star className="w-3 h-3 fill-[#E3644F] text-[#E3644F] shrink-0" strokeWidth={1.75} />
-                      <span>{currentCoach.rating}</span>
-                      <span className="font-sans text-[#5E5B54]">({currentCoach.reviewCount}件)</span>
-                    </span>
+                    {currentCoach.rating && currentCoach.reviewCount > 0 && (
+                      <span className="inline-flex items-center gap-1 font-en text-[11px] font-bold text-[#2C2B29] bg-[#FCE7A2] px-2.5 py-1 rounded-full">
+                        <Star className="w-3 h-3 fill-[#E3644F] text-[#E3644F] shrink-0" strokeWidth={1.75} />
+                        <span>{currentCoach.rating}</span>
+                        <span className="font-sans text-[#5E5B54]">({currentCoach.reviewCount}件)</span>
+                      </span>
+                    )}
                   </div>
 
                   <div id="coach-price" className="text-right">
@@ -784,15 +796,19 @@ export default function HomePageClient({
                   >
                     {currentCoach.tag}
                   </span>
-                  <p
-                    id="coach-title"
-                    className="font-heading text-xs sm:text-sm font-bold text-[#2C2B29] leading-snug"
-                  >
-                    {currentCoach.title}
-                  </p>
-                  <p className="text-[11px] text-[#5E5B54] leading-relaxed">
-                    {currentCoach.summary}
-                  </p>
+                  {currentCoach.title && (
+                    <p
+                      id="coach-title"
+                      className="font-heading text-xs sm:text-sm font-bold text-[#2C2B29] leading-snug"
+                    >
+                      {currentCoach.title}
+                    </p>
+                  )}
+                  {currentCoach.summary && currentCoach.summary !== currentCoach.title && (
+                    <p className="text-[11px] text-[#5E5B54] leading-relaxed">
+                      {currentCoach.summary}
+                    </p>
+                  )}
                   <p
                     id="coach-area"
                     className="text-[11px] text-[#2C2B29] font-bold flex items-center gap-1.5 pt-1"
@@ -1423,7 +1439,7 @@ export default function HomePageClient({
                       </span>
                       <div className="flex flex-wrap items-baseline gap-x-2.5 gap-y-1">
                         <p className="text-2xl sm:text-3xl font-extrabold text-[#2C2B29] font-en tracking-tight">
-                          ¥5,500〜
+                          ¥5,000〜
                         </p>
                         <span className="text-xs font-bold text-[#3E8E84] bg-[#D2E7DF]/45 px-2.5 py-0.5 rounded-full">
                           税込・交通費込

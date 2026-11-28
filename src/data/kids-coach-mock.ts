@@ -81,7 +81,7 @@ export const SPORT_CATEGORIES: SportCategory[] = [
     longDesc: '体育の授業でつまずきがちな鉄棒や跳び箱を完全マンツーマンで指導。スモールステップで恐怖心を取り除き、「できた！」の達成感を育みます。',
     subCategories: ['逆上がり・鉄棒', '跳び箱（開脚跳び）', '縄跳び・二重跳び', 'マット運動・球技基礎'],
     recommendedAges: '年少〜小学6年生',
-    priceFrom: 5500,
+    priceFrom: 5000,
   },
   {
     slug: 'swimming',
@@ -92,7 +92,7 @@ export const SPORT_CATEGORIES: SportCategory[] = [
     longDesc: '東京都内のご希望エリアに合わせて、個人指導が可能な環境で完全マンツーマン指導。集団スイミングスクールで順番待ちばかりだったお子様も、60分フルで練習できて無理なく進級・完泳を目指せます。',
     subCategories: ['水慣れ・顔つけ', 'バタ足・息継ぎ克服', 'クロール25m完泳', '平泳ぎ・背泳ぎ・バタフライ'],
     recommendedAges: '3歳〜中学生',
-    priceFrom: 6000,
+    priceFrom: 5000,
   },
   {
     slug: 'niche-sports',
@@ -103,7 +103,7 @@ export const SPORT_CATEGORIES: SportCategory[] = [
     longDesc: '近くにスクールがないマイナースポーツや専門競技も、経験豊富な専任コーチが出張指導。お子様の個性と「やってみたい！」を全力で応援します。',
     subCategories: ['一輪車', '体操・バク転', 'ダブルダッチ', 'フェンシング', 'ボルダリング'],
     recommendedAges: '5歳〜高校生',
-    priceFrom: 6500,
+    priceFrom: 5000,
   },
 ];
 

@@ -181,7 +181,7 @@ export default async function SportCategoryPage({ params }: SportPageProps) {
                     <div>
                       レッスン料金:{' '}
                       <strong className="font-en text-base text-[#E3644F] font-extrabold">
-                        ￥{category.priceFrom.toLocaleString()}〜
+                        ¥{category.priceFrom.toLocaleString()}〜
                       </strong>{' '}
                       / 60分（税込・交通費込）
                     </div>

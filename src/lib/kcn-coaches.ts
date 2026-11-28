@@ -90,7 +90,7 @@ export async function fetchApprovedCoachesWithSlots(): Promise<{
         sportSlug: mapSportLabelToSlug(s.sport_category || ''),
         description: s.description || '',
         targetAreas: Array.isArray(s.target_areas) ? s.target_areas : [],
-        price: Number(s.price || 5500),
+        price: Number(s.price || 5000),
         durationMinutes: Number(s.duration_minutes || 60),
         targetAges: s.target_ages || '4〜12歳（年中〜小学生）',
       }));
@@ -98,7 +98,7 @@ export async function fetchApprovedCoachesWithSlots(): Promise<{
       const minPrice =
         publishedServices.length > 0
           ? Math.min(...publishedServices.map((s) => s.price))
-          : 5500;
+          : 5000;
       const primaryService = publishedServices[0];
 
       const profileSports = Array.isArray(c.sport_categories)
@@ -121,6 +121,8 @@ export async function fetchApprovedCoachesWithSlots(): Promise<{
 
       const rawAreas = Array.isArray(c.target_areas) ? c.target_areas : [];
       const areas = sanitizeCoachAreas(rawAreas);
+      const reviewCount = Number(c.total_completed_lessons || 0);
+      const bio = (c.bio || '').trim();
 
       return {
         id: c.id,
@@ -131,8 +133,8 @@ export async function fetchApprovedCoachesWithSlots(): Promise<{
         avatar:
           c.avatar_url ||
           'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80',
-        rating: Number(c.avg_rating || 5.0),
-        reviewCount: Number(c.total_completed_lessons || 0),
+        rating: reviewCount > 0 ? Number(c.avg_rating || 0) : 0,
+        reviewCount,
         hourlyRate: minPrice,
         durationMinutes: primaryService?.durationMinutes || 60,
         sports: rawSports,
@@ -140,11 +142,11 @@ export async function fetchApprovedCoachesWithSlots(): Promise<{
         specialties: rawSports,
         areas,
         areaSlugs: mapAreaToSlugs(areas),
-        bio: c.bio || '',
+        bio,
         achievements: [c.title],
         coachingHistory: ['認定本人確認・目視審査通過コーチ'],
         targetAges: primaryService?.targetAges || '4〜12歳（年中〜小学生）',
-        message: c.bio || 'お子様のペースに合わせて丁寧に指導いたします。',
+        message: '',
         isVerified: true,
         publishedServices,
       };
